@@ -1,0 +1,10 @@
+.area{
+    margin:10px 0;
+}
+
+textarea{
+    width:100%;
+    min-height:120px;
+    box-sizing:border-box;
+    resize:vertical;
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Jelly Brainfuck Compiler</title>
+        <link rel="stylesheet" href="main.css" />
+        <script src="wasm32codegen.max.js" type="text/javascript"></script>
+        <script src="jelly-bf.js" type="text/javascript"></script>
+        <script src="main.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <h2 class="area">Jelly Brainfuck Compiler</h2>
+        <div class="area">Brainfuck is compiled to WebAssembly and executed <span style="text-decoration:underline;">natively</span> in your browser.  Each cell is 8 bytes.  Input and output are treated as UTF-8.</div>
+        <div class="area">
+            <div>Code here:</div>
+            <textarea id="codetextbox"></textarea>
+        </div>
+        <div class="area">
+            <div>Input here:</div>
+            <textarea id="inputtextbox"></textarea>
+        </div>
+        <div class="area">
+            <div>Press this button:</div>
+            <input id="codebutton" type="button" value="Compile and run" />
+        </div>
+        <div class="area">
+            <div>Output here:</div>
+            <textarea id="outputtextbox" readonly></textarea>
+            <input id="clearoutputbutton" type="button" value="Clear output" />
+        </div>
+    </body>
+</html>
