@@ -1,4 +1,8 @@
 window.addEventListener("load",function(){
+    if(!window.WebAssembly){
+        alert("This browser does not support WebAssembly.  Chrome 57+, Firefox 52+ and Opera 44+ are great browsers that do support WebAssembly, and they're free!");
+        return;
+    }
     var codeTextbox=document.getElementById("codetextbox");
     var inputTextbox=document.getElementById("inputtextbox");
     var outputTextbox=document.getElementById("outputtextbox");
