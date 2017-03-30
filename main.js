@@ -11,7 +11,8 @@ window.addEventListener("load",function(){
     codeButton.addEventListener("click",function(){
         var codestr=codeTextbox.value;
         var instr=inputTextbox.value;
-        JellyBF.compile(codestr,{},function(compiledModule){
+        outputTextbox.value="";
+        JellyBF.compileOptimized(codestr,{},function(compiledModule){
             JellyBF.execute(compiledModule,instr,function(outstr){
                 outputTextbox.value=outstr;
             });

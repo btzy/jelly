@@ -7,7 +7,6 @@ var JellyBF={
         moduleWriter.setMemory(memoryWriter);
         
         var codeWriter=new Wasm32CodeWriter([Wasm32VarType.i32]); // ptr
-        var memIndex=0;
         for(var i=0;i<str.length;++i){
             switch(str[i]){
                 case '+':
@@ -74,6 +73,11 @@ var JellyBF={
         var byteCode=moduleWriter.generateModule();
         
         WebAssembly.compile(byteCode).then(function(compiledModule){
+            callback(compiledModule);
+        });
+    },
+    compileOptimized:function(str,options,callback){
+        WebAssembly.compile(JellyBFCompiler.compile(str,options)).then(function(compiledModule){
             callback(compiledModule);
         });
     },
