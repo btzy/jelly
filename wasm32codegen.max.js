@@ -163,6 +163,10 @@ Wasm32CodeWriter.prototype.setType = function(type) {
     this._functiontype = type;
 };
 
+Wasm32CodeWriter.prototype.setLocalTypes = function(local_types) {
+    this._localTypes = local_types ? local_types : [];
+};
+
 Wasm32CodeWriter.instruction = {
     unreachable: 0,
     nop: 1,
