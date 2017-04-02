@@ -7,6 +7,7 @@ var JellyBF={
         moduleWriter.setMemory(memoryWriter);
         
         var codeWriter=new Wasm32CodeWriter([Wasm32VarType.i32]); // ptr
+        
         for(var i=0;i<str.length;++i){
             switch(str[i]){
                 case '+':

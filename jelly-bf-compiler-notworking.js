@@ -676,13 +676,13 @@ JellyBFRangeDelta.prototype.wrapWithLoop=function(options){
         else if(JellyBFLinear.IsExactSame(this._data[dataIndex]._combination,JellyBFRangeEntry.makeFromTerm(0,JellyBFLinearTerm.makeConstant(-1))._combination)){  // is -1
             // for now, we can only expand loop when all parameters are constants
             // TODO: improve this
-            var is_all_constant=true;
+            /*var is_all_constant=true;
             this._data.forEach(function(jellybfentry){
                 jellybfentry._combination._terms.forEach(function(term){
                     if(term._parts.length!==0)is_all_constant=false;
                 });
             });
-            if(!is_all_constant)return false;
+            if(!is_all_constant)return false;*/
             
             this._data.forEach(function(jellybfentry){
                 var newTerm=new JellyBFLinearTerm(1);

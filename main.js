@@ -12,8 +12,14 @@ window.addEventListener("load",function(){
         var codestr=codeTextbox.value;
         var instr=inputTextbox.value;
         outputTextbox.value="";
-        JellyBF.compileOptimized(codestr,{},function(compiledModule){
+        var startTime=Date.now();
+        JellyBF.compileOptimized(codestr,{infiniteloops:false},function(compiledModule){
+            var compiledTime=Date.now();
+            console.log("Compiled in "+Math.round(compiledTime-startTime)+" ms.");
+            compiledTime=Date.now();
             JellyBF.execute(compiledModule,instr,function(outstr){
+                var executedTime=Date.now();
+                console.log("Executed in "+Math.round(executedTime-compiledTime)+" ms.");
                 outputTextbox.value=outstr;
             });
         });
