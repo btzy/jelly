@@ -31,8 +31,7 @@ window.addEventListener("load",function(){
     };
     
     var compile=function(worker,sourcecode,options,callback){
-        var module=new Uint8Array(100);
-        worker.postMessage({type:"compile",sourcecode:sourcecode,options:options,module:module},[module.buffer]);
+        worker.postMessage({type:"compile",sourcecode:sourcecode,options:options});
         wait_for_message(worker,"compiled",function(message){
             callback();
         });
