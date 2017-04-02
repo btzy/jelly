@@ -1542,7 +1542,7 @@ var JellyBF_CloseAndAttemptUnrollLoop = function(codeChunks, options) {
 
 var JellyBFSync = {
     compile: function(str, options) {
-        return WebAssembly.Module(JellyBFCompiler.compile(str, options));
+        return new WebAssembly.Module(JellyBFCompiler.compile(str, options));
     },
     execute: function(module, inputuint8array, options) {
         options.eof_value = options.eof_value || 0;
@@ -1558,7 +1558,7 @@ var JellyBFSync = {
         var put_output = function(byte) {
             outputdata.push(byte);
         };
-        var instance = WebAssembly.Instance(module, {
+        var instance = new WebAssembly.Instance(module, {
             interaction: {
                 input: get_input,
                 output: put_output
@@ -1609,7 +1609,7 @@ var JellyBFSync = {
             Atomics.store(outputwaitint32array, WaitArrayId.TERMINATED_FLAG, 1);
             Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head + 1);
         };
-        var instance = WebAssembly.Instance(module, {
+        var instance = new WebAssembly.Instance(module, {
             interaction: {
                 input: get_input,
                 output: put_output
