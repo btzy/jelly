@@ -89,6 +89,14 @@ window.addEventListener("load",function(){
     var isCompiling=false;
     var toRunAfterCompiling=false;
     
+    var compilationSpan=document.getElementById("compilationspan");
+    var executionSpan=document.getElementById("executionspan");
+    
+    while(compilationSpan.firstChild)compilationSpan.removeChild(compilationSpan.firstChild);
+    compilationSpan.appendChild(document.createTextNode(""));
+    while(executionSpan.firstChild)executionSpan.removeChild(executionSpan.firstChild);
+    executionSpan.appendChild(document.createTextNode(""));
+    
     codeEditor.on("change",function(){
         codeCompiled=false;
     });
@@ -107,17 +115,25 @@ window.addEventListener("load",function(){
         processHandler=new JellyBFProcessHandler();
         processHandler.initialize(function(){
             if(!to_terminate){
+                executionSpan.firstChild.nodeValue="";
+                compilationSpan.firstChild.nodeValue="Compiling…";
                 var start_time=Date.now();
-                processHandler.compile(codeEditor.getValue(),{},function(){
+                processHandler.compile(codeEditor.getValue(),{},function(message){
                     if(!to_terminate){
-                        codeCompiled=true;
                         isCompiling=false;
-                        var end_time=Date.now();
-                        console.log("Compiled in "+Math.round(end_time-start_time)+" ms.");
                         processHandlerTerminator=undefined;
-                        if(toRunAfterCompiling){
-                            toRunAfterCompiling=false;
-                            runbutton.click();
+                        if(message.success){
+                            codeCompiled=true;
+                            var end_time=Date.now();
+                            console.log("Compiled in "+Math.round(end_time-start_time)+" ms.");
+                            compilationSpan.firstChild.nodeValue="Compiled in "+Math.round(end_time-start_time)+" ms.";
+                            if(toRunAfterCompiling){
+                                toRunAfterCompiling=false;
+                                runbutton.click();
+                            }
+                        }
+                        else{
+                            compilationSpan.firstChild.nodeValue="Compilation failed.";
                         }
                     }
                 });
@@ -140,15 +156,39 @@ window.addEventListener("load",function(){
             runTerminator=function(){
                 to_terminate=true;
             };
+            executionSpan.firstChild.nodeValue="Executing…";
             var start_time=Date.now();
-            processHandler.execute(inputEditor.getValue(),{},function(outputstr){
+            processHandler.execute(inputEditor.getValue(),{},function(message){
                 if(!to_terminate){
-                    var end_time=Date.now();
-                    console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
-                    outputEditor.setValue(outputstr,1);
                     runTerminator=undefined;
+                    if(message.success){
+                        var end_time=Date.now();
+                        outputEditor.setValue(message.output,1);
+                        console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
+                        executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
+                    }
+                    else{
+                        executionSpan.firstChild.nodeValue="Execution failed.";
+                    }
                 }
             });
         }
+    });
+    
+    // splitters
+    Array.prototype.forEach.call(document.getElementById("ioblock").getElementsByClassName("vertical-spacer"),function(el){
+        var splitter=new FlexSplitter(el,el.getElementsByClassName("actual-spacer")[0],0.1,0.1);
+        splitter.onadjust=function(){
+            inputEditor.resize();
+            outputEditor.resize();
+        };
+    });
+    Array.prototype.forEach.call(document.getElementsByClassName("horizontal-spacer"),function(el){
+        var splitter=new FlexSplitter(el,el.getElementsByClassName("actual-spacer")[0],0.1,0.1);
+        splitter.onadjust=function(){
+            codeEditor.resize();
+            inputEditor.resize();
+            outputEditor.resize();
+        };
     });
 });

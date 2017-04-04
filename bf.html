@@ -3,12 +3,13 @@
     <head>
         <meta name="description" content="A fast optimizing compiler for Brainfuck that runs in a browser.">
         <meta charset="UTF-8">
-        <title>Jelly Brainfuck Compiler</title>
+        <title>Jelly Compiler for Brainfuck</title>
         <link href="https://fonts.googleapis.com/css?family=Chewy|Signika" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="bf.css" />
         <script src="ace/ace.js" type="text/javascript"></script>
-        <script src="jelly-bf-processhandler.js"></script>
+        <script src="flex-splitter.js" type="text/javascript"></script>
+        <script src="jelly-bf-processhandler.js" type="text/javascript"></script>
         <script src="bf.js" type="text/javascript"></script>
     </head>
     <body>
@@ -28,16 +29,30 @@
             <div id="codeblock">
                 <div class="editor"></div>
             </div>
-            <div id="compilationinfo"></div>
+            <div class="horizontal-spacer">
+                <div class="actual-spacer"></div>
+            </div>
+            <div id="compilationinfo"><span class="compilationinfospan" id="compilationspan"></span><span class="compilationinfospan" id="executionspan"></span></div>
             <div id="iooptions"></div>
+            <div class="horizontal-spacer">
+                <div class="actual-spacer"></div>
+            </div>
             <div id="ioblock">
                 <div class="separate">
-                    <div id="inputblock">
-                        <div class="editor"></div>
+                    <div class="ioseparateindividualblock" id="inputblock">
+                        <div class="iotitle">Input</div>
+                        <div class="iocontent">
+                            <div class="editor"></div>
+                        </div>
                     </div>
-                    <div class="vertical-spacer"></div>
-                    <div id="outputblock">
-                        <div class="editor"></div>
+                    <div class="vertical-spacer">
+                        <div class="actual-spacer"></div>
+                    </div>
+                    <div class="ioseparateindividualblock" id="outputblock">
+                        <div class="iotitle">Output</div>
+                        <div class="iocontent">
+                            <div class="editor"></div>
+                        </div>
                     </div>
                 </div>
             </div>
