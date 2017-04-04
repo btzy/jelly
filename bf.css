@@ -15,6 +15,12 @@ html, body{
     margin:0;
     font-family:"Signika",sans-serif;
     font-size:16px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 body>.wrapper{
@@ -25,11 +31,14 @@ body>.wrapper{
     flex-wrap:nowrap;
     justify-content:center;
     align-items:stretch;
+    position:relative;
 }
 
 body>.wrapper>*{
     display:block;
     overflow:hidden;
+    position:relative;
+    z-index:0;
 }
 
 #header{
@@ -58,7 +67,7 @@ body>.wrapper>*{
 
 #header .title{
     flex:0 0 auto;
-    padding:0px 12px;
+    padding:0px 20px;
 }
 
 #header .title .jelly{
@@ -156,8 +165,21 @@ body>.wrapper>*{
 }
 
 #compilationinfo{
-    flex:0 0 20px;
+    flex:0 0 26px;
     background-color:rgb(204,224,255);
+    line-height:26px;
+}
+
+#compilationinfo .compilationinfospan{
+    padding:0 12px;
+}
+
+#compilationinfo #compilationspan{
+    color:blue;
+}
+
+#compilationinfo #executionspan{
+    color:green;
 }
 
 #iooptions{
@@ -177,18 +199,40 @@ body>.wrapper>*{
     flex-wrap:nowrap;
     justify-content:center;
     align-items:stretch;
+    position:relative;
 }
 
 #ioblock .separate>*{
     display:block;
     overflow:hidden;
+    position:relative;
+    z-index:0;
 }
 
-#ioblock .separate #inputblock{
+#ioblock .separate .ioseparateindividualblock{
     flex:1 1 0px;
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
 }
 
-#ioblock .separate #outputblock{
+#ioblock .separate .ioseparateindividualblock>*{
+    display:block;
+    overflow:hidden;
+}
+
+#ioblock .separate .ioseparateindividualblock>.iotitle{
+    flex:0 0 20px;
+    height:20px;
+    line-height:20px;
+    padding:0 6px;
+    background-color:rgb(230,240,255);
+    font-size:14px;
+}
+
+#ioblock .separate .ioseparateindividualblock>.iocontent{
     flex:1 1 0px;
 }
 
@@ -196,9 +240,38 @@ body>.wrapper>*{
     flex:0 0 4px;
     width:4px;
     background-color:rgb(204,224,255);
+    position:relative;
+    overflow:visible;
+    z-index:1;
 }
 
-#ioblock .separate #inputblock .editor, #ioblock .separate #outputblock .editor{
+#ioblock .separate .vertical-spacer .actual-spacer{
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:-3px;
+    right:-3px;
+    cursor:col-resize;
+}
+
+#ioblock .separate .ioseparateindividualblock .editor{
     height:100%;
     width:100%;
+}
+
+body>.wrapper>.horizontal-spacer{
+    flex:0 0 0px;
+    height:0px;
+    position:relative;
+    overflow:visible;
+    z-index:1;
+}
+
+body>.wrapper>.horizontal-spacer .actual-spacer{
+    position:absolute;
+    top:-5px;
+    bottom:-5px;
+    left:0;
+    right:0;
+    cursor:row-resize;
 }

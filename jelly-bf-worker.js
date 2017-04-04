@@ -6,8 +6,14 @@
             case "compile":
                 var sourcecode=message.sourcecode;
                 var options=message.options;
-                module=JellyBFSync.compile(sourcecode,options);
-                self.postMessage({type:"compiled"});
+                try{
+                    module=JellyBFSync.compile(sourcecode,options);
+                    self.postMessage({type:"compiled"});
+                }
+                catch(e){
+                    console.log(e);
+                    self.postMessage({type:"compileerror"});
+                }
                 break;
             case "execute-interactive":
                 var inputbuffer=message.inputbuffer; // circular buffer
@@ -17,14 +23,26 @@
                 var outputwaitbuffer=message.outputwaitbuffer;
                 // all wait buffers expected to be zeroed
                 var options=message.options;
-                JellyBFSync.executeInteractive(module,UInt8Array(inputbuffer),UInt8Array(outputbuffer),Int32Array(inputwaitbuffer),Int32Array(outputwaitbuffer),options);
-                self.postMessage({type:"executed"});
+                try{
+                    JellyBFSync.executeInteractive(module,UInt8Array(inputbuffer),UInt8Array(outputbuffer),Int32Array(inputwaitbuffer),Int32Array(outputwaitbuffer),options);
+                    self.postMessage({type:"executed"});
+                }
+                catch(e){
+                    console.log(e);
+                    self.postMessage({type:"executeerror"});
+                }
                 break;
             case "execute":
                 var inputuint8array=message.inputuint8array;
                 var options=message.options;
-                var outputuint8array=JellyBFSync.execute(module,inputuint8array,options);
-                self.postMessage({type:"executed",outputuint8array:outputuint8array},[outputuint8array.buffer]);
+                try{
+                    var outputuint8array=JellyBFSync.execute(module,inputuint8array,options);
+                    self.postMessage({type:"executed",outputuint8array:outputuint8array},[outputuint8array.buffer]);
+                }
+                catch(e){
+                    console.log(e);
+                    self.postMessage({type:"executeerror"});
+                }
                 break;
         }
     });

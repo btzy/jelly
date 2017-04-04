@@ -24,7 +24,10 @@ JellyBFProcessHandler.prototype.initialize=function(callback){
 JellyBFProcessHandler.prototype.compile=function(sourcecode,options,callback){
     this.worker.postMessage({type:"compile",sourcecode:sourcecode,options:options});
     wait_for_message(this.worker,"compiled",function(message){
-        callback();
+        callback({success:true});
+    });
+    wait_for_message(this.worker,"compileerror",function(message){
+        callback({success:false});
     });
 };
 
@@ -32,7 +35,10 @@ JellyBFProcessHandler.prototype.execute=function(inputstr,options,callback){
     var encodedinput=new TextEncoder().encode(inputstr);
     this.worker.postMessage({type:"execute",inputuint8array:encodedinput,options:options},[encodedinput.buffer]);
     wait_for_message(this.worker,"executed",function(message){
-        callback(new TextDecoder().decode(message.outputuint8array));
+        callback({success:true,output:new TextDecoder().decode(message.outputuint8array)});
+    });
+    wait_for_message(this.worker,"executeerror",function(message){
+        callback({success:false});
     });
 };
 
