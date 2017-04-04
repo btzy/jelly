@@ -63,6 +63,7 @@ body>.wrapper>*{
 #header>.wrapper>*{
     display:block;
     overflow:hidden;
+    height:50px;
 }
 
 #header .title{
