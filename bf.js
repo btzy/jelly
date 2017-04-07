@@ -26,6 +26,13 @@ window.addEventListener("load",function(){
     outputEditor.setReadOnly(true);
     outputEditor.getSession().setUseWorker(false);
     
+    var interactiveConsole=new InteractiveConsole(document.getElementById("ioblock").getElementsByClassName("combined")[0].getElementsByClassName("terminal")[0]);
+    /*interactiveConsole.write("Test 1");
+    interactiveConsole.write("Test 2\n");
+    interactiveConsole.read(function(e){
+        alert(e);
+    });*/
+    
     // buttons
     var openbutton=document.getElementById("openbutton");
     var downloadbutton=document.getElementById("downloadbutton");
@@ -148,6 +155,12 @@ window.addEventListener("load",function(){
                 compilebutton.click();
             }
         }
+        else if(runTerminator){ // this is here because i don't know any way to kill execution without terminating the worker
+            runTerminator();
+            runTerminator=undefined;
+            toRunAfterCompiling=true;
+            compilebutton.click();
+        }
         else{
             if(runTerminator){
                 runTerminator();
@@ -158,22 +171,81 @@ window.addEventListener("load",function(){
             };
             executionSpan.firstChild.nodeValue="Executing…";
             var start_time=Date.now();
-            processHandler.execute(inputEditor.getValue(),{},function(message){
-                if(!to_terminate){
-                    runTerminator=undefined;
-                    if(message.success){
-                        var end_time=Date.now();
-                        outputEditor.setValue(message.output,1);
-                        console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
-                        executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
+            if(radio_interactive_no.checked){
+                processHandler.execute(inputEditor.getValue(),{},function(message){
+                    if(!to_terminate){
+                        runTerminator=undefined;
+                        if(message.success){
+                            var end_time=Date.now();
+                            outputEditor.setValue(message.output,1);
+                            console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
+                            executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
+                        }
+                        else{
+                            executionSpan.firstChild.nodeValue="Execution failed.";
+                        }
                     }
-                    else{
-                        executionSpan.firstChild.nodeValue="Execution failed.";
+                });
+            }
+            else{
+                interactiveConsole.clear();
+                var interactiveObj=processHandler.executeInteractive({},function(){
+                    if(!to_terminate){
+                        interactiveConsole.read(function(text){
+                            interactiveObj.inputAddedCallback(text);
+                        });
                     }
-                }
-            });
+                },function(outputText){
+                    if(!to_terminate){
+                        interactiveConsole.write(outputText);
+                    }
+                },function(message){
+                    if(!to_terminate){
+                        runTerminator=undefined;
+                        if(message.success){
+                            var end_time=Date.now();
+                            outputEditor.setValue(message.output,1);
+                            console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
+                            executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
+                        }
+                        else{
+                            executionSpan.firstChild.nodeValue="Execution failed.";
+                        }
+                    }
+                });
+            }
         }
     });
+    
+    // options
+    var radio_interactive_yes=document.getElementById("radio-interactive-yes");
+    var radio_interactive_no=document.getElementById("radio-interactive-no");
+    
+    var ioblock=document.getElementById("ioblock");
+    var separate_ioblock=ioblock.getElementsByClassName("separate")[0];
+    var combined_ioblock=ioblock.getElementsByClassName("combined")[0];
+    
+    radio_interactive_yes.addEventListener("change",function(){
+        separate_ioblock.classList.remove("selected");
+        combined_ioblock.classList.add("selected");
+        localStorage.setItem("option-interactive","yes");
+    });
+    radio_interactive_no.addEventListener("change",function(){
+        combined_ioblock.classList.remove("selected");
+        separate_ioblock.classList.add("selected");
+        localStorage.setItem("option-interactive","no");
+    });
+    
+    var interactive=localStorage.getItem("option-interactive");
+    if(interactive==="no"||!window.SharedArrayBuffer){
+        radio_interactive_no.checked=true;
+        radio_interactive_no.dispatchEvent(new Event("change"));
+    }
+    else{
+        radio_interactive_yes.checked=true;
+        radio_interactive_yes.dispatchEvent(new Event("change"));
+    }
+    
     
     // splitters
     Array.prototype.forEach.call(document.getElementById("ioblock").getElementsByClassName("vertical-spacer"),function(el){
@@ -191,4 +263,6 @@ window.addEventListener("load",function(){
             outputEditor.resize();
         };
     });
+    
+    
 });

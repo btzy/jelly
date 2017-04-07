@@ -1567,7 +1567,7 @@ var JellyBFSync = {
         instance.exports.main();
         return outputdata.toUint8Array();
     },
-    executeInteractive: function(module, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, options) {
+    executeInteractive: function(module, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, options, updatedOutputCallback, requestInputCallback) {
         var WaitArrayId = {
             READ_HEAD: 0,
             WRITE_HEAD: 1,
@@ -1578,7 +1578,8 @@ var JellyBFSync = {
         var input_read_head = 0, input_write_head = 0, input_terminated = false;
         var get_input = function() {
             if (input_read_head === input_write_head) {
-                Atomics.wait(inputwaitint32array, WaitArrayId.WRITE_HEAD, input_write_head);
+                requestInputCallback(input_read_head);
+                console.log(Atomics.wait(inputwaitint32array, WaitArrayId.WRITE_HEAD, input_write_head));
                 input_write_head = Atomics.load(inputwaitint32array, WaitArrayId.WRITE_HEAD);
                 if (!input_terminated) {
                     input_terminated = Atomics.load(inputwaitint32array, WaitArrayId.TERMINATED_FLAG) !== 0;
@@ -1600,6 +1601,7 @@ var JellyBFSync = {
             }
             Atomics.store(outputuint8array, output_write_head++ % options.bufferlength, byte);
             Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head);
+            updatedOutputCallback();
         };
         var terminate_output = function() {
             if (output_read_head + options.bufferlength === output_write_head) {
@@ -1608,6 +1610,7 @@ var JellyBFSync = {
             }
             Atomics.store(outputwaitint32array, WaitArrayId.TERMINATED_FLAG, 1);
             Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head + 1);
+            updatedOutputCallback();
         };
         var instance = new WebAssembly.Instance(module, {
             interaction: {
@@ -1649,7 +1652,16 @@ var JellyBFSync = {
             var outputwaitbuffer = message.outputwaitbuffer;
             var options = message.options;
             try {
-                JellyBFSync.executeInteractive(module, UInt8Array(inputbuffer), UInt8Array(outputbuffer), Int32Array(inputwaitbuffer), Int32Array(outputwaitbuffer), options);
+                JellyBFSync.executeInteractive(module, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), options, function() {
+                    self.postMessage({
+                        type: "output-updated"
+                    });
+                }, function(readhead) {
+                    self.postMessage({
+                        type: "input-requested",
+                        readhead: readhead
+                    });
+                });
                 self.postMessage({
                     type: "executed"
                 });

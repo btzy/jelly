@@ -24,7 +24,11 @@
                 // all wait buffers expected to be zeroed
                 var options=message.options;
                 try{
-                    JellyBFSync.executeInteractive(module,UInt8Array(inputbuffer),UInt8Array(outputbuffer),Int32Array(inputwaitbuffer),Int32Array(outputwaitbuffer),options);
+                    JellyBFSync.executeInteractive(module, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer),options,function(){
+                        self.postMessage({type:"output-updated"});
+                    },function(readhead){
+                        self.postMessage({type:"input-requested",readhead:readhead});
+                    });
                     self.postMessage({type:"executed"});
                 }
                 catch(e){

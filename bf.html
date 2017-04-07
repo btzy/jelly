@@ -8,6 +8,7 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" href="bf.css" />
         <script src="ace/ace.js" type="text/javascript"></script>
+        <script src="interactive-console.js" type="text/javascript"></script>
         <script src="flex-splitter.js" type="text/javascript"></script>
         <script src="jelly-bf-processhandler.js" type="text/javascript"></script>
         <script src="bf.js" type="text/javascript"></script>
@@ -33,12 +34,54 @@
                 <div class="actual-spacer"></div>
             </div>
             <div id="compilationinfo"><span class="compilationinfospan" id="compilationspan"></span><span class="compilationinfospan" id="executionspan"></span></div>
-            <div id="iooptions"></div>
+            <div class="horizontal-spacer">
+                <div class="actual-spacer"></div>
+            </div>
+            <div id="options">
+                <div class="wrapper">
+                    <div class="compilationoptions">
+                        <fieldset class="optiongroup">
+                            <div class="radiooption">
+                                <input type="radio" name="compilemode" id="radio-compilemode-debug" />
+                                <label for="radio-compilemode-debug"><span class="fakeradiobutton"></span><span class="radiotext">Debug (Interpreted)</span></label>
+                            </div>
+                            <div class="radiooption">
+                                <input type="radio" name="compilemode" id="radio-compilemode-release" />
+                                <label for="radio-compilemode-release"><span class="fakeradiobutton"></span><span class="radiotext">Release (Compiled &amp; Optimized)</span></label>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="vertical-bar"></div>
+                    <div class="executionoptions">
+                        <fieldset class="optiongroup">
+                            <div class="radiooption">
+                                <input type="radio" name="interactive" id="radio-interactive-yes" />
+                                <label for="radio-interactive-yes"><span class="fakeradiobutton"></span><span class="radiotext">Interactive</span></label>
+                            </div>
+                            <div class="radiooption">
+                                <input type="radio" name="interactive" id="radio-interactive-no" />
+                                <label for="radio-interactive-no"><span class="fakeradiobutton"></span><span class="radiotext">Non-interactive</span></label>
+                            </div>
+                        </fieldset>
+                        <!--<fieldset class="optiongroup">
+                            <div class="radiooption">
+                                <input type="radio" name="interweave" id="radio-interweave-yes" />
+                                <label for="radio-interweave-yes"><span class="fakeradiobutton"></span><span class="radiotext">Interweave I/O</span></label>
+                            </div>
+                            <div class="radiooption">
+                                <input type="radio" name="interweave" id="radio-interweave-no" />
+                                <label for="radio-interweave-no"><span class="fakeradiobutton"></span><span class="radiotext">Separate I/O</span></label>
+                            </div>
+                        </fieldset>-->
+                    </div>
+                    <div class="extraspace"></div>
+                </div>
+            </div>
             <div class="horizontal-spacer">
                 <div class="actual-spacer"></div>
             </div>
             <div id="ioblock">
-                <div class="separate">
+                <div class="separate selected">
                     <div class="ioseparateindividualblock" id="inputblock">
                         <div class="iotitle">Input</div>
                         <div class="iocontent">
@@ -53,6 +96,12 @@
                         <div class="iocontent">
                             <div class="editor"></div>
                         </div>
+                    </div>
+                </div>
+                <div class="combined">
+                    <div class="iotitle">Console</div>
+                    <div class="iocontent">
+                        <div class="terminal"></div>
                     </div>
                 </div>
             </div>
