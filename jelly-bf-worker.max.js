@@ -1540,6 +1540,95 @@ var JellyBF_CloseAndAttemptUnrollLoop = function(codeChunks, options) {
     }
 };
 
+JellyBFInterpreter = function(codeString, get_input, put_output, breakpointuint8array, globalpauseuint8array) {
+    this.code = codeString;
+    this.get_input = get_input;
+    this.put_output = put_output;
+    this.breakpointuint8array = breakpointuint8array;
+    this.globalpauseuint8array = globalpauseuint8array;
+    this.memory_cells = 3e4;
+    this.memory = new Uint8Array(this.memory_cells);
+    this.memory_ptr = 0;
+    this.next_instruction_index = [];
+    this.loop_pair = [];
+    var loop_stack = [];
+    var last_instruction_index = Number.MIN_SAFE_INTEGER;
+    this.entry_point = Number.MIN_SAFE_INTEGER;
+    for (var i = 0; i < this.code.length; ++i) {
+        if (this.code[i] === "[") {
+            loop_stack.push(i);
+        } else if (this.code[i] === "]") {
+            if (loop_stack.length === 0) throw JellyBFInterpreter.CompileError.LOOPS_IMBALANCED;
+            var openingindex = loop_stack.pop();
+            this.loop_pair[openingindex] = i;
+            this.loop_pair[i] = openingindex;
+        }
+        if ("<>+-[],.".indexOf(this.code[i]) !== -1) {
+            if (last_instruction_index !== Number.MIN_SAFE_INTEGER) this.next_instruction_index[last_instruction_index] = i; else this.entry_point = i;
+            last_instruction_index = i;
+        }
+    }
+    if (loop_stack.length !== 0) throw JellyBFInterpreter.CompileError.LOOPS_IMBALANCED;
+    this.next_instruction_index[last_instruction_index] = Number.MAX_SAFE_INTEGER;
+    this.instruction_ptr = this.entry_point;
+};
+
+JellyBFInterpreter.CompileError = {
+    LOOPS_IMBALANCED: 1
+};
+
+JellyBFInterpreter.RuntimeError = {
+    INVALID_MEMORY_ACCESS: 1,
+    INTEGER_OVERFLOW: 2
+};
+
+JellyBFInterpreter.RunResult = {
+    PROGRAM_TERMINATED: 1,
+    PAUSED_AT_BREAKPOINT: 2,
+    PAUSED_WITHOUT_BREAKPOINT: 3
+};
+
+JellyBFInterpreter.prototype.run = function() {
+    while (this.instruction_ptr != Number.MAX_SAFE_INTEGER) {
+        if (this.code[this.instruction_ptr] === "<") {
+            if (this.memory_ptr === 0) throw JellyBFInterpreter.RuntimeError.INVALID_MEMORY_ACCESS;
+            --this.memory_ptr;
+        } else if (this.code[this.instruction_ptr] === ">") {
+            if (this.memory_ptr + 1 === this.memory_cells) throw JellyBFInterpreter.RuntimeError.INVALID_MEMORY_ACCESS;
+            ++this.memory_ptr;
+        } else if (this.code[this.instruction_ptr] === "+") {
+            this.memory[this.memory_ptr] = this.memory[this.memory_ptr] + 1 & 255;
+        } else if (this.code[this.instruction_ptr] === "-") {
+            this.memory[this.memory_ptr] = this.memory[this.memory_ptr] - 1 & 255;
+        } else if (this.code[this.instruction_ptr] === "[") {
+            if (this.memory[this.memory_ptr] === 0) {
+                this.instruction_ptr = this.loop_pair[this.instruction_ptr];
+            }
+        } else if (this.code[this.instruction_ptr] === "]") {
+            if (this.memory[this.memory_ptr] !== 0) {
+                this.instruction_ptr = this.loop_pair[this.instruction_ptr];
+            }
+        } else if (this.code[this.instruction_ptr] === ",") {
+            this.memory[this.memory_ptr] = this.get_input();
+        } else if (this.code[this.instruction_ptr] === ".") {
+            this.put_output(this.memory[this.memory_ptr]);
+        } else {
+            throw "Internal error!";
+        }
+        this.instruction_ptr = this.next_instruction_index[this.instruction_ptr];
+        if (Atomics.load(this.breakpointuint8array, this.instruction_ptr) !== 0 && this.instruction_ptr != Number.MAX_SAFE_INTEGER) return {
+            type: JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT,
+            index: this.instruction_ptr
+        };
+        if (Atomics.load(this.globalpauseuint8array, 0) !== 0 && this.instruction_ptr != Number.MAX_SAFE_INTEGER) return {
+            type: JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT
+        };
+    }
+    return {
+        type: JellyBFInterpreter.RunResult.PROGRAM_TERMINATED
+    };
+};
+
 var JellyBFSync = {
     compile: function(str, options) {
         return new WebAssembly.Module(JellyBFCompiler.compile(str, options));
@@ -1567,7 +1656,7 @@ var JellyBFSync = {
         instance.exports.main();
         return outputdata.toUint8Array();
     },
-    executeInteractive: function(module, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, options) {
+    executeInteractive: function(module, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, options, updatedOutputCallback, requestInputCallback) {
         var WaitArrayId = {
             READ_HEAD: 0,
             WRITE_HEAD: 1,
@@ -1578,7 +1667,8 @@ var JellyBFSync = {
         var input_read_head = 0, input_write_head = 0, input_terminated = false;
         var get_input = function() {
             if (input_read_head === input_write_head) {
-                Atomics.wait(inputwaitint32array, WaitArrayId.WRITE_HEAD, input_write_head);
+                requestInputCallback(input_read_head);
+                console.log(Atomics.wait(inputwaitint32array, WaitArrayId.WRITE_HEAD, input_write_head));
                 input_write_head = Atomics.load(inputwaitint32array, WaitArrayId.WRITE_HEAD);
                 if (!input_terminated) {
                     input_terminated = Atomics.load(inputwaitint32array, WaitArrayId.TERMINATED_FLAG) !== 0;
@@ -1600,6 +1690,7 @@ var JellyBFSync = {
             }
             Atomics.store(outputuint8array, output_write_head++ % options.bufferlength, byte);
             Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head);
+            updatedOutputCallback();
         };
         var terminate_output = function() {
             if (output_read_head + options.bufferlength === output_write_head) {
@@ -1608,6 +1699,7 @@ var JellyBFSync = {
             }
             Atomics.store(outputwaitint32array, WaitArrayId.TERMINATED_FLAG, 1);
             Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head + 1);
+            updatedOutputCallback();
         };
         var instance = new WebAssembly.Instance(module, {
             interaction: {
@@ -1618,11 +1710,66 @@ var JellyBFSync = {
         instance.exports.main();
         terminate_output();
         return true;
+    },
+    interpretInteractive: function(str, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, breakpointuint8array, globalpauseuint8array, options, updatedOutputCallback, requestInputCallback) {
+        var WaitArrayId = {
+            READ_HEAD: 0,
+            WRITE_HEAD: 1,
+            TERMINATED_FLAG: 2
+        };
+        options.bufferlength = options.bufferlength || 1024;
+        options.eof_value = options.eof_value || 0;
+        var input_read_head = 0, input_write_head = 0, input_terminated = false;
+        var get_input = function() {
+            if (input_read_head === input_write_head) {
+                requestInputCallback(input_read_head);
+                console.log(Atomics.wait(inputwaitint32array, WaitArrayId.WRITE_HEAD, input_write_head));
+                input_write_head = Atomics.load(inputwaitint32array, WaitArrayId.WRITE_HEAD);
+                if (!input_terminated) {
+                    input_terminated = Atomics.load(inputwaitint32array, WaitArrayId.TERMINATED_FLAG) !== 0;
+                }
+            }
+            if (!input_terminated || input_read_head + 1 < input_write_head) {
+                var val = Atomics.load(inputuint8array, input_read_head++ % options.bufferlength);
+                Atomics.store(inputwaitint32array, WaitArrayId.READ_HEAD, input_read_head);
+                return val;
+            } else {
+                return options.eof_value;
+            }
+        };
+        var output_read_head = 0, output_write_head = 0, output_terminated = false;
+        var put_output = function(byte) {
+            if (output_read_head + options.bufferlength === output_write_head) {
+                Atomics.wait(outputwaitint32array, WaitArrayId.READ_HEAD, output_read_head);
+                output_read_head = Atomics.load(outputwaitint32array, WaitArrayId.READ_HEAD);
+            }
+            Atomics.store(outputuint8array, output_write_head++ % options.bufferlength, byte);
+            Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head);
+            updatedOutputCallback();
+        };
+        var terminate_output = function() {
+            if (output_read_head + options.bufferlength === output_write_head) {
+                Atomics.wait(outputwaitint32array, WaitArrayId.READ_HEAD, output_read_head);
+                output_read_head = Atomics.load(outputwaitint32array, WaitArrayId.READ_HEAD);
+            }
+            Atomics.store(outputwaitint32array, WaitArrayId.TERMINATED_FLAG, 1);
+            Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head + 1);
+            updatedOutputCallback();
+        };
+        var instance = new JellyBFInterpreter(str, get_input, put_output, breakpointuint8array, globalpauseuint8array);
+        return {
+            run: function() {
+                var res = instance.run();
+                if (res === JellyBFInterpreter.RunResult.PROGRAM_TERMINATED) terminate_output();
+                return res;
+            }
+        };
     }
 };
 
 (function() {
     var module = undefined;
+    var interpretstate = undefined;
     self.addEventListener("message", function(e) {
         var message = e.data;
         switch (message.type) {
@@ -1649,7 +1796,16 @@ var JellyBFSync = {
             var outputwaitbuffer = message.outputwaitbuffer;
             var options = message.options;
             try {
-                JellyBFSync.executeInteractive(module, UInt8Array(inputbuffer), UInt8Array(outputbuffer), Int32Array(inputwaitbuffer), Int32Array(outputwaitbuffer), options);
+                JellyBFSync.executeInteractive(module, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), options, function() {
+                    self.postMessage({
+                        type: "output-updated"
+                    });
+                }, function(readhead) {
+                    self.postMessage({
+                        type: "input-requested",
+                        readhead: readhead
+                    });
+                });
                 self.postMessage({
                     type: "executed"
                 });
@@ -1674,6 +1830,70 @@ var JellyBFSync = {
                 console.log(e);
                 self.postMessage({
                     type: "executeerror"
+                });
+            }
+            break;
+
+          case "interpret-interactive":
+            var sourcecode = message.sourcecode;
+            var inputbuffer = message.inputbuffer;
+            var outputbuffer = message.outputbuffer;
+            var inputwaitbuffer = message.inputwaitbuffer;
+            var outputwaitbuffer = message.outputwaitbuffer;
+            var options = message.options;
+            var breakpointbuffer = message.breakpointbuffer;
+            var globalpausebuffer = message.globalpausebuffer;
+            try {
+                interpretstate = JellyBFSync.interpretInteractive(sourcecode, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), new Uint8Array(breakpointbuffer), new Uint8Array(globalpausebuffer), options, function() {
+                    self.postMessage({
+                        type: "output-updated"
+                    });
+                }, function(readhead) {
+                    self.postMessage({
+                        type: "input-requested",
+                        readhead: readhead
+                    });
+                });
+                self.postMessage({
+                    type: "parsecomplete"
+                });
+            } catch (e) {
+                console.log(e);
+                self.postMessage({
+                    type: "parseerror",
+                    kind: e
+                });
+            }
+            break;
+
+          case "interpret-continue":
+            var ret;
+            try {
+                ret = interpretstate.run();
+            } catch (e) {
+                console.log(e);
+                self.postMessage({
+                    type: "runtimeerror",
+                    kind: e
+                });
+                break;
+            }
+            if (ret.type === JellyBFInterpreter.RunResult.PROGRAM_TERMINATED) {
+                self.postMessage({
+                    type: "interpreted"
+                });
+                interpretstate = undefined;
+            } else if (ret.type === JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT) {
+                self.postMessage({
+                    type: "interpret-breakpoint"
+                });
+            } else if (ret.type === JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT) {
+                self.postMessage({
+                    type: "interpret-paused"
+                });
+            } else {
+                self.postMessage({
+                    type: "interpreterror"
                 });
             }
             break;

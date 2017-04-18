@@ -3,6 +3,10 @@ blue (50%): rgb(0,102,255)
 blue (75%): rgb(128,179,255)
 blue (90%): rgb(204,224,255)
 blue (95%): rgb(230,240,255)
+
+red (30%): rgb(153,0,0)
+
+grey (25%): rgb(64,64,64)
 */
 
 html, body{
@@ -63,6 +67,7 @@ body>.wrapper>*{
 #header>.wrapper>*{
     display:block;
     overflow:hidden;
+    height:50px;
 }
 
 #header .title{
@@ -74,7 +79,20 @@ body>.wrapper>*{
     font-family:"Chewy","Signika",sans-serif;
     font-size:32px;
     color:rgb(153,0,0);
-    text-shadow:0 0 10px white;
+    position:relative;
+}
+
+#header .title::before{
+    position:absolute;
+    display:block;
+    content:"Jelly";
+    padding:0px 20px;
+    left:0;
+    top:0;
+    font-family:"Chewy","Signika",sans-serif;
+    font-size:32px;
+    color:white;
+    filter:blur(4px);
 }
 
 #header .headerbutton{
@@ -165,9 +183,10 @@ body>.wrapper>*{
 }
 
 #compilationinfo{
-    flex:0 0 26px;
-    background-color:rgb(204,224,255);
-    line-height:26px;
+    flex:0 0 20px;
+    background-color:rgb(230,240,255);
+    line-height:20px;
+    font-size:14px;
 }
 
 #compilationinfo .compilationinfospan{
@@ -182,9 +201,135 @@ body>.wrapper>*{
     color:green;
 }
 
-#iooptions{
-    flex:0 0 0px;
+#options{
+    flex:0 0 48px;
     background-color:rgb(204,224,255);
+    font-size:14px;
+}
+
+#options>.wrapper{
+    height:100%;
+    width:100%;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:stretch;
+}
+
+#options>.wrapper>*{
+    display:block;
+    overflow:hidden;
+    height:48px;
+    box-sizing:border-box;
+    flex:0 0 auto;
+}
+
+#options>.wrapper>.executionoptions, #options>.wrapper>.compilationoptions{
+    display:flex;
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:stretch;
+}
+
+
+
+#options>.wrapper>.vertical-bar{
+    flex:0 0 18px;
+    width:18px;
+    overflow:visible;
+}
+
+#options>.wrapper>.vertical-bar::before{
+    display:block;
+    content:"";
+    margin:0 auto;
+    width:2px;
+    height:100%;
+    background-color:white;
+    filter:blur(2px);
+}
+
+#options .optiongroup{
+    flex:0 0 auto;
+    padding:4px 12px;
+    border:none;
+    outline:none;
+    margin:0;
+}
+
+#options .optiongroup .radiooption{
+    height:20px;
+}
+
+#options .optiongroup .radiooption input[type="radio"]{
+    position:absolute;
+    visibility:hidden;
+}
+
+#options .optiongroup .radiooption label{
+    line-height:20px;
+    width:100%;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    align-items:center;
+    cursor:pointer;
+}
+
+#options .optiongroup .radiooption label>span{
+    display:block;
+    flex:0 0 auto;
+}
+
+#options .optiongroup .radiooption label>span.fakeradiobutton{
+    width:16px;
+    height:16px;
+    box-sizing:border-box;
+    border:2px solid rgb(64,64,64);
+    border-radius:100%;
+    transition:border-color 0.5s;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:center;
+}
+
+#options .optiongroup .radiooption label>span.fakeradiobutton::before{
+    content:"";
+    display:block;
+    background-color:blue;
+    border-radius:100%;
+    flex:0 0 auto;
+    width:0;
+    height:0;
+    transition:width 0.5s,height 0.5s;
+}
+
+#options .optiongroup .radiooption label>span.radiotext{
+    padding-left:4px;
+    color:rgb(64,64,64);
+    transition:color 0.5s;
+}
+
+#options .optiongroup .radiooption input[type="radio"]:checked ~ label>span.radiotext{
+    color:blue;
+}
+
+#options .optiongroup .radiooption input[type="radio"]:checked ~ label>span.fakeradiobutton{
+    border-color:blue;
+}
+
+#options .optiongroup .radiooption input[type="radio"]:checked ~ label>span.fakeradiobutton::before{
+    width:8px;
+    height:8px;
+}
+
+#options>.wrapper>.extraspace{
+    flex:1 1 auto;
 }
 
 #ioblock{
@@ -200,6 +345,10 @@ body>.wrapper>*{
     justify-content:center;
     align-items:stretch;
     position:relative;
+}
+
+#ioblock .separate:not(.selected){
+    display:none;
 }
 
 #ioblock .separate>*{
@@ -230,6 +379,7 @@ body>.wrapper>*{
     padding:0 6px;
     background-color:rgb(230,240,255);
     font-size:14px;
+    color:rgb(64,64,64);
 }
 
 #ioblock .separate .ioseparateindividualblock>.iocontent{
@@ -257,6 +407,49 @@ body>.wrapper>*{
 #ioblock .separate .ioseparateindividualblock .editor{
     height:100%;
     width:100%;
+}
+
+#ioblock .combined{
+    height:100%;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+}
+
+#ioblock .combined:not(.selected){
+    display:none;
+}
+
+#ioblock .combined>.iotitle{
+    flex:0 0 20px;
+    height:20px;
+    line-height:20px;
+    padding:0 6px;
+    background-color:rgb(230,240,255);
+    font-size:14px;
+    color:rgb(64,64,64);
+}
+
+#ioblock .combined>.iocontent{
+    flex:1 1 0px;
+    overflow:hidden;
+}
+
+#ioblock .combined>.iocontent .terminal{
+    height:100%;
+    width:100%;
+    -webkit-touch-callout: initial;
+    -webkit-user-select: initial;
+    -khtml-user-select: initial;
+    -moz-user-select: initial;
+    -ms-user-select: initial;
+    user-select: initial;
+    font:16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    padding:0 4px;
+    box-sizing:border-box;
 }
 
 body>.wrapper>.horizontal-spacer{

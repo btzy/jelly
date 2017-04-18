@@ -1,5 +1,6 @@
 (function(){
     var module=undefined;
+    var interpretstate=undefined;
     self.addEventListener("message",function(e){
         var message=e.data;
         switch(message.type){
@@ -24,7 +25,11 @@
                 // all wait buffers expected to be zeroed
                 var options=message.options;
                 try{
-                    JellyBFSync.executeInteractive(module,UInt8Array(inputbuffer),UInt8Array(outputbuffer),Int32Array(inputwaitbuffer),Int32Array(outputwaitbuffer),options);
+                    JellyBFSync.executeInteractive(module, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer),options,function(){
+                        self.postMessage({type:"output-updated"});
+                    },function(readhead){
+                        self.postMessage({type:"input-requested",readhead:readhead});
+                    });
                     self.postMessage({type:"executed"});
                 }
                 catch(e){
@@ -42,6 +47,54 @@
                 catch(e){
                     console.log(e);
                     self.postMessage({type:"executeerror"});
+                }
+                break;
+            case "interpret-interactive":
+                var sourcecode=message.sourcecode;
+                var inputbuffer=message.inputbuffer; // circular buffer
+                var outputbuffer=message.outputbuffer;
+                var inputwaitbuffer=message.inputwaitbuffer; // three elements - next read index, next write index, terminated (1-yes) - these are never decreasing
+                // write index must be increased by 1 when stream is terminated
+                var outputwaitbuffer=message.outputwaitbuffer;
+                // all wait buffers expected to be zeroed
+                var options=message.options;
+                var breakpointbuffer=message.breakpointbuffer;
+                var globalpausebuffer=message.globalpausebuffer;
+                try{
+                    interpretstate=JellyBFSync.interpretInteractive(sourcecode, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), new Uint8Array(breakpointbuffer), new Uint8Array(globalpausebuffer),options,function(){
+                        self.postMessage({type:"output-updated"});
+                    },function(readhead){
+                        self.postMessage({type:"input-requested",readhead:readhead});
+                    });
+                    self.postMessage({type:"parsecomplete"});
+                }
+                catch(e){
+                    console.log(e);
+                    self.postMessage({type:"parseerror",kind:e});
+                }
+                break;
+            case "interpret-continue":
+                var ret;
+                try{
+                    ret=interpretstate.run();
+                }
+                catch(e){
+                    console.log(e);
+                    self.postMessage({type:"runtimeerror",kind:e});
+                    break;
+                }
+                if(ret.type===JellyBFInterpreter.RunResult.PROGRAM_TERMINATED){
+                    self.postMessage({type:"interpreted"});
+                    interpretstate=undefined;
+                }
+                else if(ret.type===JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT){
+                    self.postMessage({type:"interpret-breakpoint"});
+                }
+                else if(ret.type===JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT){
+                    self.postMessage({type:"interpret-paused"});
+                }
+                else{
+                    self.postMessage({type:"interpreterror"});
                 }
                 break;
         }
