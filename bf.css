@@ -435,8 +435,7 @@ body>.wrapper>*{
 
 #ioblock .combined>.iocontent{
     flex:1 1 0px;
-    height:100%;
-    width:100%;
+    overflow:hidden;
 }
 
 #ioblock .combined>.iocontent .terminal{
@@ -450,6 +449,7 @@ body>.wrapper>*{
     user-select: initial;
     font:16px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
     padding:0 4px;
+    box-sizing:border-box;
 }
 
 body>.wrapper>.horizontal-spacer{

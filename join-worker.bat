@@ -1,1 +1,1 @@
-call uglifyjs wasm32codegen.max.js jelly-bf-compiler.js jelly-bf-sync.js jelly-bf-worker.js --beautify --output jelly-bf-worker.max.js
+call uglifyjs wasm32codegen.max.js jelly-bf-compiler.js jelly-bf-interpreter.js jelly-bf-sync.js jelly-bf-worker.js --beautify --output jelly-bf-worker.max.js

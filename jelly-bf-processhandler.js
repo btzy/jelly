@@ -22,27 +22,37 @@ JellyBFProcessHandler.prototype.initialize=function(callback){
 };
 
 JellyBFProcessHandler.prototype.compile=function(sourcecode,options,callback){
-    this.worker.postMessage({type:"compile",sourcecode:sourcecode,options:options});
-    wait_for_message(this.worker,"compiled",function(message){
+    if(options.debug){
         callback({success:true});
-    });
-    wait_for_message(this.worker,"compileerror",function(message){
-        callback({success:false});
-    });
+    }
+    else{
+        this.worker.postMessage({type:"compile",sourcecode:sourcecode,options:options});
+        wait_for_message(this.worker,"compiled",function(message){
+            callback({success:true});
+        });
+        wait_for_message(this.worker,"compileerror",function(message){
+            callback({success:false});
+        });
+    }
 };
 
 JellyBFProcessHandler.prototype.execute=function(inputstr,options,callback){
-    var encodedinput=new TextEncoder().encode(inputstr);
-    this.worker.postMessage({type:"execute",inputuint8array:encodedinput,options:options},[encodedinput.buffer]);
-    wait_for_message(this.worker,"executed",function(message){
-        callback({success:true,output:new TextDecoder().decode(message.outputuint8array)});
-    });
-    wait_for_message(this.worker,"executeerror",function(message){
-        callback({success:false});
-    });
+    if(options.debug){
+        
+    }
+    else{
+        var encodedinput=new TextEncoder().encode(inputstr);
+        this.worker.postMessage({type:"execute",inputuint8array:encodedinput,options:options},[encodedinput.buffer]);
+        wait_for_message(this.worker,"executed",function(message){
+            callback({success:true,output:new TextDecoder().decode(message.outputuint8array)});
+        });
+        wait_for_message(this.worker,"executeerror",function(message){
+            callback({success:false});
+        });
+    }
 };
 
-JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequestCallback,outputCallback,doneCallback){
+JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequestCallback,outputCallback,doneCallback,pausedCallback){
     var WaitArrayId={
         READ_HEAD:0,
         WRITE_HEAD:1,
@@ -145,17 +155,66 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
     
     this.worker.addEventListener("message",outputUpdatedHandler);
     
-    var that=this;
-    wait_for_message(this.worker,"executed",function(message){
-        that.worker.removeEventListener("message",outputUpdatedHandler);
-        doneCallback({success:true});
-    });
-    wait_for_message(this.worker,"executeerror",function(message){
-        that.worker.removeEventListener("message",outputUpdatedHandler);
-        doneCallback({success:false});
-    });
-    
-    this.worker.postMessage({type:"execute-interactive",inputbuffer:inputBuffer,outputbuffer:outputBuffer,inputwaitbuffer:inputWaitBuffer,outputwaitbuffer:outputWaitBuffer,options:options});
+    if(options.debug){
+        var that=this;
+        var sourcecode=options.sourcecode;
+        var breakpointBuffer=options.breakpointBuffer;
+        var globalpauseBuffer=options.globalPauseBuffer;
+        delete options.sourcecode;
+        delete options.breakpointBuffer;
+        delete options.globalPauseBuffer;
+        
+        var resumer=function(){
+            that.worker.postMessage({type:"interpret-continue"});
+        };
+        
+        var interpretHandler=function(e){
+            if(e.data.type==="interpret-breakpoint"){
+                pausedCallback({breakpoint:true,resume:resumer});
+            }
+            else if(e.data.type==="interpret-paused"){
+                pausedCallback({breakpoint:false,resume:resumer});
+            }
+        };
+        
+        this.worker.addEventListener("message",interpretHandler);
+        
+        wait_for_message(this.worker,"parsecomplete",function(message){
+            resumer();
+        });
+        
+        wait_for_message(this.worker,"parseerror",function(message){
+            that.worker.removeEventListener("message",interpretHandler);
+            that.worker.removeEventListener("message",outputUpdatedHandler);
+            doneCallback({success:false,message:message});
+        });
+        
+        wait_for_message(this.worker,"interpreted",function(message){
+            that.worker.removeEventListener("message",interpretHandler);
+            that.worker.removeEventListener("message",outputUpdatedHandler);
+            doneCallback({success:true});
+        });
+        wait_for_message(this.worker,"interpreterror",function(message){
+            that.worker.removeEventListener("message",interpretHandler);
+            that.worker.removeEventListener("message",outputUpdatedHandler);
+            doneCallback({success:false});
+        });
+        
+        this.worker.postMessage({type:"interpret-interactive",sourcecode:sourcecode,inputbuffer:inputBuffer,outputbuffer:outputBuffer,inputwaitbuffer:inputWaitBuffer,outputwaitbuffer:outputWaitBuffer,breakpointbuffer:breakpointBuffer,globalpausebuffer:globalpauseBuffer,options:options});
+    }
+    else{
+        var that=this;
+        wait_for_message(this.worker,"executed",function(message){
+            that.worker.removeEventListener("message",outputUpdatedHandler);
+            doneCallback({success:true});
+        });
+        wait_for_message(this.worker,"executeerror",function(message){
+            that.worker.removeEventListener("message",outputUpdatedHandler);
+            doneCallback({success:false});
+        });
+
+        this.worker.postMessage({type:"execute-interactive",inputbuffer:inputBuffer,outputbuffer:outputBuffer,inputwaitbuffer:inputWaitBuffer,outputwaitbuffer:outputWaitBuffer,options:options});
+    }
     
     return {inputAddedCallback:inputAdded};
 };
