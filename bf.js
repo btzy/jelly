@@ -3,6 +3,18 @@ window.addEventListener("load",function(){
         alert("This browser does not support WebAssembly.  Chrome 57+, Firefox 52+ and Opera 44+ are great browsers that do support WebAssembly, and they're free!");
         return;
     }
+    var ffox=navigator.userAgent.match(/Firefox\/([0-9]+)\./);
+    var ffversion=ffox?parseInt(ffox[1]):0;
+    if(!window.SharedArrayBuffer||ffversion<48){
+        var msg="";
+        if(ffversion>=48){
+            msg+="To enable support for experimental Atomics & SharedArrayBuffer in Firefox "+ffversion+", type \"about:config\" in your address bar and enable the \"javascript.options.shared_memory\" setting.  They are required for all combinations of modes other than release non-interactive mode.";
+        }
+        else{
+            msg+="This browser does not support experimental Atomics & SharedArrayBuffer.  They are required for all combinations of modes other than release non-interactive mode.  The latest release version of Firefox has experimental support for these features.\nNote: The implementations in Chrome and Opera seem to be bugged.";
+        }
+        alert(msg);
+    }
     
     var codeEditor=ace.edit(document.getElementById("codeblock").getElementsByClassName("editor")[0]);
     codeEditor.setTheme("ace/theme/chrome");
@@ -109,7 +121,7 @@ window.addEventListener("load",function(){
     });
     
     var compilemodes_changed=function(){
-        executemodes_changed();
+        executemodes_changed(true);
         if(processHandlerTerminator){
             processHandlerTerminator();
             processHandlerTerminator=undefined;
@@ -119,12 +131,14 @@ window.addEventListener("load",function(){
         isCompiling=false;
     };
     
-    var executemodes_changed=function(){
+    var executemodes_changed=function(from_compilemode_changed){
         if(runTerminator){
             runTerminator();
             runTerminator=undefined;
-            compilemodes_changed();
-            return;
+            if(!from_compilemode_changed){
+                compilemodes_changed();
+                return;
+            }
         }
         executionSpan.firstChild.nodeValue="";
         if(interactive){
@@ -132,6 +146,9 @@ window.addEventListener("load",function(){
         }
         else{
             outputEditor.setValue("");
+        }
+        if(compilemode==="debug"&&interactive==="no"){
+            alert("Non-interactive I/O not supported in debug mode.");
         }
     }
     
@@ -202,7 +219,7 @@ window.addEventListener("load",function(){
             };
             executionSpan.firstChild.nodeValue="Executing…";
             var start_time=Date.now();
-            if(!interactive){
+            if(interactive==="no"){
                 processHandler.execute(inputEditor.getValue(),{debug:(compilemode==="debug")},function(message){
                     if(!to_terminate){
                         runTerminator=undefined;
