@@ -64,8 +64,8 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
     
     var inputBuffer=new SharedArrayBuffer(1024);
     var outputBuffer=new SharedArrayBuffer(1024);
-    var inputWaitBuffer=new SharedArrayBuffer(3*4);
-    var outputWaitBuffer=new SharedArrayBuffer(3*4);
+    var inputWaitBuffer=new SharedArrayBuffer(3*Int32Array.BYTES_PER_ELEMENT);
+    var outputWaitBuffer=new SharedArrayBuffer(3*Int32Array.BYTES_PER_ELEMENT);
     
     var pendingInputData=[];//{data:typedarray,ptrdone:integer}
     var inputTimeout=undefined;
@@ -100,7 +100,7 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
             output_read_head=output_write_head;
         }
         Atomics.store(outputwaitint32array,WaitArrayId.READ_HEAD,output_read_head);
-        Atomics.wake(outputwaitint32array,WaitArrayId.READ_HEAD);
+        Atomics.wake(outputwaitint32array,WaitArrayId.READ_HEAD,1);
         var newText=new TextDecoder().decode(newData);
         outputCallback(newText);
     };
@@ -129,7 +129,7 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
             pendingInputData.shift();
         }
         Atomics.store(inputwaitint32array,WaitArrayId.WRITE_HEAD,input_write_head);
-        console.log(Atomics.wake(inputwaitint32array,WaitArrayId.WRITE_HEAD));
+        console.log(Atomics.wake(inputwaitint32array,WaitArrayId.WRITE_HEAD,1));
         
         if(pendingInputData.length>0){
             inputTimeout=setTimeout(do_input,40);
