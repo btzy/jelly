@@ -1,19 +1,10 @@
 window.addEventListener("load",function(){
     if(!window.WebAssembly){
-        alert("This browser does not support WebAssembly.  Chrome 57+, Firefox 52+ and Opera 44+ are great browsers that do support WebAssembly, and they're free!");
+        alert("This browser does not support WebAssembly, which is required to use this compiler.  Chrome 57+, Firefox 52+ and Opera 44+ are great browsers that do support WebAssembly, and they're free!");
         return;
     }
-    var ffox=navigator.userAgent.match(/Firefox\/([0-9]+)\./);
-    var ffversion=ffox?parseInt(ffox[1]):0;
-    if(!window.SharedArrayBuffer||ffversion<48){
-        var msg="";
-        if(ffversion>=48){
-            msg+="To enable support for experimental Atomics & SharedArrayBuffer in Firefox "+ffversion+", type \"about:config\" in your address bar and enable the \"javascript.options.shared_memory\" setting.  They are required for all combinations of modes other than release non-interactive mode.";
-        }
-        else{
-            msg+="This browser does not support experimental Atomics & SharedArrayBuffer.  They are required for all combinations of modes other than release non-interactive mode.  The latest release version of Firefox has experimental support for these features.\nNote: The implementations in Chrome and Opera seem to be bugged.";
-        }
-        alert(msg);
+    if(!window.SharedArrayBuffer){
+        alert("This browser does not support experimental Atomics & SharedArrayBuffer.  They are required for all combinations of modes other than release non-interactive mode.  Experimental support is available in Chrome, Firefox and Opera, and can be enabled in the browser settings.");
     }
     
     var codeEditor=ace.edit(document.getElementById("codeblock").getElementsByClassName("editor")[0]);
