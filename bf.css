@@ -173,6 +173,11 @@ body>.wrapper>*{
     flex:1 1 auto;
 }
 
+#header>.wrapper>.spaceend{
+    flex:0 0 auto;
+    width:10px;
+}
+
 #codeblock{
     flex:3 3 0px;
 }
@@ -180,6 +185,24 @@ body>.wrapper>*{
 #codeblock .editor{
     height:100%;
     width:100%;
+}
+
+#codeblock .editor .execution-line{
+    background:rgba(255,255,0,0.5);
+    color:rgba(255,255,0,0.5);
+    position:absolute;
+}
+
+#codeblock .editor .breakpoint{
+    background:red;
+    color:red;
+    position:absolute;
+}
+
+#codeblock .editor .execution-position{
+    background:orange;
+    color:orange;
+    position:absolute;
 }
 
 #compilationinfo{
@@ -467,4 +490,10 @@ body>.wrapper>.horizontal-spacer .actual-spacer{
     left:0;
     right:0;
     cursor:row-resize;
+}
+
+
+
+.displaynone, #header .displaynone{
+    display:none;
 }

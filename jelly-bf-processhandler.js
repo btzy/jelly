@@ -170,10 +170,10 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
         
         var interpretHandler=function(e){
             if(e.data.type==="interpret-breakpoint"){
-                pausedCallback({breakpoint:true,resume:resumer});
+                pausedCallback({breakpoint:true,resume:resumer,index:e.data.index});
             }
             else if(e.data.type==="interpret-paused"){
-                pausedCallback({breakpoint:false,resume:resumer});
+                pausedCallback({breakpoint:false,resume:resumer,index:e.data.index});
             }
         };
         
