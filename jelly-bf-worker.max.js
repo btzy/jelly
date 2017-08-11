@@ -1862,7 +1862,7 @@ var JellyBFSync = {
                 console.log(e);
                 self.postMessage({
                     type: "parseerror",
-                    kind: e.toString()
+                    kind: e
                 });
             }
             break;
@@ -1875,7 +1875,7 @@ var JellyBFSync = {
                 console.log(e);
                 self.postMessage({
                     type: "runtimeerror",
-                    kind: e.toString()
+                    kind: e
                 });
                 break;
             }

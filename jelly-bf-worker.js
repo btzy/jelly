@@ -70,7 +70,7 @@
                 }
                 catch(e){
                     console.log(e);
-                    self.postMessage({type:"parseerror",kind:e.toString()});
+                    self.postMessage({type:"parseerror",kind:e});
                 }
                 break;
             case "interpret-continue":
@@ -80,7 +80,7 @@
                 }
                 catch(e){
                     console.log(e);
-                    self.postMessage({type:"runtimeerror",kind:e.toString()});
+                    self.postMessage({type:"runtimeerror",kind:e});
                     break;
                 }
                 if(ret.type===JellyBFInterpreter.RunResult.PROGRAM_TERMINATED){

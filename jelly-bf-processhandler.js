@@ -186,7 +186,12 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
         wait_for_message(this.worker,"parseerror",function(message){
             that.worker.removeEventListener("message",interpretHandler);
             that.worker.removeEventListener("message",outputUpdatedHandler);
-            doneCallback({success:false,message:message});
+            doneCallback({success:false,data:message});
+        });
+        wait_for_message(this.worker,"runtimeerror",function(message){
+            that.worker.removeEventListener("message",interpretHandler);
+            that.worker.removeEventListener("message",outputUpdatedHandler);
+            doneCallback({success:false,data:message});
         });
         
         wait_for_message(this.worker,"interpreted",function(message){
