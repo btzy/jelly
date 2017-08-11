@@ -70,7 +70,7 @@
                 }
                 catch(e){
                     console.log(e);
-                    self.postMessage({type:"parseerror",kind:e});
+                    self.postMessage({type:"parseerror",kind:e.toString()});
                 }
                 break;
             case "interpret-continue":
@@ -80,7 +80,7 @@
                 }
                 catch(e){
                     console.log(e);
-                    self.postMessage({type:"runtimeerror",kind:e});
+                    self.postMessage({type:"runtimeerror",kind:e.toString()});
                     break;
                 }
                 if(ret.type===JellyBFInterpreter.RunResult.PROGRAM_TERMINATED){
@@ -88,10 +88,10 @@
                     interpretstate=undefined;
                 }
                 else if(ret.type===JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT){
-                    self.postMessage({type:"interpret-breakpoint"});
+                    self.postMessage({type:"interpret-breakpoint",index:ret.index});
                 }
                 else if(ret.type===JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT){
-                    self.postMessage({type:"interpret-paused"});
+                    self.postMessage({type:"interpret-paused",index:ret.index});
                 }
                 else{
                     self.postMessage({type:"interpreterror"});

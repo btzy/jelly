@@ -1616,12 +1616,13 @@ JellyBFInterpreter.prototype.run = function() {
             throw "Internal error!";
         }
         this.instruction_ptr = this.next_instruction_index[this.instruction_ptr];
-        if (Atomics.load(this.breakpointuint8array, this.instruction_ptr) !== 0 && this.instruction_ptr != Number.MAX_SAFE_INTEGER) return {
+        if (this.instruction_ptr !== Number.MAX_SAFE_INTEGER && Atomics.load(this.breakpointuint8array, this.instruction_ptr) !== 0) return {
             type: JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT,
             index: this.instruction_ptr
         };
-        if (Atomics.load(this.globalpauseuint8array, 0) !== 0 && this.instruction_ptr != Number.MAX_SAFE_INTEGER) return {
-            type: JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT
+        if (this.instruction_ptr !== Number.MAX_SAFE_INTEGER && Atomics.load(this.globalpauseuint8array, 0) !== 0) return {
+            type: JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT,
+            index: this.instruction_ptr
         };
     }
     return {
@@ -1861,7 +1862,7 @@ var JellyBFSync = {
                 console.log(e);
                 self.postMessage({
                     type: "parseerror",
-                    kind: e
+                    kind: e.toString()
                 });
             }
             break;
@@ -1874,7 +1875,7 @@ var JellyBFSync = {
                 console.log(e);
                 self.postMessage({
                     type: "runtimeerror",
-                    kind: e
+                    kind: e.toString()
                 });
                 break;
             }
@@ -1885,11 +1886,13 @@ var JellyBFSync = {
                 interpretstate = undefined;
             } else if (ret.type === JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT) {
                 self.postMessage({
-                    type: "interpret-breakpoint"
+                    type: "interpret-breakpoint",
+                    index: ret.index
                 });
             } else if (ret.type === JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT) {
                 self.postMessage({
-                    type: "interpret-paused"
+                    type: "interpret-paused",
+                    index: ret.index
                 });
             } else {
                 self.postMessage({

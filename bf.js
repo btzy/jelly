@@ -41,6 +41,8 @@ window.addEventListener("load",function(){
     var downloadbutton=document.getElementById("downloadbutton");
     var compilebutton=document.getElementById("compilebutton");
     var runbutton=document.getElementById("runbutton");
+    var continuebutton=document.getElementById("continuebutton");
+    var stepbutton=document.getElementById("stepbutton");
     
     var openbuttonfilepicker=document.getElementById("openbuttonfilepicker");
     
@@ -61,6 +63,14 @@ window.addEventListener("load",function(){
         else if(e.key==="F5"){ // F5
             e.preventDefault();
             runbutton.click();
+        }
+        else if(e.key==="F8"){ // F8
+            e.preventDefault();
+            continuebutton.click();
+        }
+        else if(e.key==="F10"){ // F10
+            e.preventDefault();
+            stepbutton.click();
         }
     });
     
@@ -140,10 +150,13 @@ window.addEventListener("load",function(){
         }
         if(compilemode==="debug"&&interactive==="no"){
             alert("Non-interactive I/O not supported in debug mode.");
+            radio_interactive_yes.checked=true;
+            radio_interactive_yes.dispatchEvent(new Event("change"));
         }
     }
     
     compilebutton.addEventListener("click",function(){
+        codeEditor.setReadOnly(true);
         if(processHandlerTerminator){
             processHandlerTerminator();
         }
@@ -165,6 +178,7 @@ window.addEventListener("load",function(){
                     if(!to_terminate){
                         isCompiling=false;
                         processHandlerTerminator=undefined;
+                        codeEditor.setReadOnly(false);
                         if(message.success){
                             codeCompiled=true;
                             var end_time=Date.now();
@@ -186,8 +200,10 @@ window.addEventListener("load",function(){
     
     var breakpointBuffer=undefined;
     var globalPauseBuffer=undefined;
+    var breakpoints=[];
     
     runbutton.addEventListener("click",function(){
+        codeEditor.setReadOnly(true);
         if(!codeCompiled){
             toRunAfterCompiling=true;
             if(!isCompiling){
@@ -216,6 +232,7 @@ window.addEventListener("load",function(){
                         runTerminator=undefined;
                         if(message.success){
                             var end_time=Date.now();
+                            codeEditor.setReadOnly(false);
                             outputEditor.setValue(message.output,1);
                             console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
                             executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
@@ -243,9 +260,10 @@ window.addEventListener("load",function(){
                     },function(message){
                         if(!to_terminate){
                             runTerminator=undefined;
+                            codeEditor.setReadOnly(false);
                             if(message.success){
                                 var end_time=Date.now();
-                                outputEditor.setValue(message.output,1);
+                                //outputEditor.setValue(message.output,1);
                                 console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
                                 executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
                             }
@@ -260,6 +278,14 @@ window.addEventListener("load",function(){
                     interactiveConsole.focus();
                     breakpointBuffer=new SharedArrayBuffer(codeEditor.getValue().length);
                     globalPauseBuffer=new SharedArrayBuffer(1);
+                    // populate the breakpoints:
+                    var bp_arr=new Uint8Array(breakpointBuffer);
+                    var codeEditorDocument=codeEditor.getSession().getDocument();
+                    breakpoints.forEach(function(bp){
+                        Atomics.store(bp_arr,codeEditorDocument.positionToIndex(bp.anchor.getPosition()),1);
+                    });
+                    
+                    
                     var interactiveObj=processHandler.executeInteractive({debug:(compilemode==="debug"),sourcecode:codeEditor.getValue(),breakpointBuffer:breakpointBuffer,globalPauseBuffer:globalPauseBuffer},function(){
                         if(!to_terminate){
                             interactiveConsole.read(function(text){
@@ -273,9 +299,13 @@ window.addEventListener("load",function(){
                     },function(message){
                         if(!to_terminate){
                             runTerminator=undefined;
+                            breakpointBuffer=undefined;
+                            globalPauseBuffer=undefined;
+                            hide_execution_only_buttons();
+                            codeEditor.setReadOnly(false);
                             if(message.success){
                                 var end_time=Date.now();
-                                outputEditor.setValue(message.output,1);
+                                //outputEditor.setValue(message.output,1);
                                 console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
                                 executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
                             }
@@ -285,16 +315,118 @@ window.addEventListener("load",function(){
                         }
                     },function(options){
                         if(options.breakpoint){
-                            alert("breakpoint hit");
+                            console.log("Breakpoint hit.");
                         }
                         else{
-                            alert("paused");
+                            console.log("Execution paused.");
                         }
+                        draw_execution_paused(options.index);
+                        continuehandler=options.resume;
+                        
                     });
+                    show_execution_only_buttons();
                 }
             }
         }
     });
+    var continuehandler=undefined;
+    var stephandler=undefined;
+    
+    
+    continuebutton.addEventListener("click",function(){
+        undraw_execution_paused();
+        if(continuehandler&&globalPauseBuffer){
+            var arr=new Uint8Array(globalPauseBuffer);
+            Atomics.store(arr,0,0);
+            continuehandler();
+        }
+    });
+    stepbutton.addEventListener("click",function(){
+        undraw_execution_paused();
+        if(continuehandler&&globalPauseBuffer){
+            var arr=new Uint8Array(globalPauseBuffer);
+            Atomics.store(arr,0,1);
+            continuehandler();
+        }
+    });
+    
+    
+    // breakpoints
+    codeEditor.on("mousedown",function(e){
+        if(e.getButton()===1){
+            window.setTimeout(function(){
+                var pos=codeEditor.getCursorPosition();
+                var session=codeEditor.getSession();
+                var document=session.getDocument();
+                var Range=ace.require('ace/range').Range;
+                var range=new Range();
+                range.start=document.createAnchor(pos.row,pos.column);
+                range.end=document.createAnchor(pos.row,pos.column+1);
+                var fix_valid_range=function(r){
+                    var endpos=r.end.getPosition();
+                    var startpos=r.start.getPosition();
+                    if(endpos.row!==startpos.row)return false;
+                    if(endpos.column<=startpos.column)return false;
+                    if(startpos.column+1!==endpos.column){
+                        r.end.setPosition(startpos.row,startpos.column+1);
+                        codeEditor.updateSelectionMarkers();
+                    }
+                    return true;
+                };
+                var oldbp_index=breakpoints.findIndex(function(x){
+                    var x_pos=x.anchor.getPosition();
+                    return x_pos.row===pos.row&&x_pos.column===pos.column;
+                });
+                var remove_bp=function(oldbp){
+                    session.removeMarker(oldbp.id);
+                    breakpoints.splice(oldbp_index,1);
+                    if(breakpointBuffer){
+                        var arr=new Uint8Array(breakpointBuffer);
+                        Atomics.store(arr,document.positionToIndex(oldbp.anchor.getPosition()),0);
+                    }
+                };
+                if(oldbp_index!==-1){
+                    var oldbp=breakpoints[oldbp_index];
+                    remove_bp(oldbp);
+                }
+                else{
+                    if(fix_valid_range(range)){
+                        var id=session.addMarker(range,"breakpoint","text",false);
+                        var oldbp={anchor:range.start,id:id};
+                        breakpoints.push(oldbp);
+                        if(breakpointBuffer){
+                            var arr=new Uint8Array(breakpointBuffer);
+                            Atomics.store(arr,document.positionToIndex(pos),1);
+                        }
+                        var anchor_changed=function(){
+                            window.setTimeout(function(){
+                                if(!fix_valid_range(range)){
+                                    remove_bp(oldbp);
+                                }
+                            },0);
+                        };
+                        range.start.on("change",anchor_changed);
+                        range.end.on("change",anchor_changed);
+                    }
+                }
+            },0);
+        }
+    });
+    var execution_location_marker_id=undefined,execution_location_line_id=undefined;
+    var draw_execution_paused=function(index){
+        undraw_execution_paused();
+        var Range=ace.require('ace/range').Range;
+        var pos=codeEditor.getSession().getDocument().indexToPosition(index);
+        var range=new Range(pos.row,pos.column,pos.row,pos.column+1);
+        execution_location_marker_id=codeEditor.getSession().addMarker(range,"execution-position","text",false);
+        var range=new Range(pos.row,0,pos.row,Number.POSITIVE_INFINITY);
+        execution_location_line_id=codeEditor.getSession().addMarker(range,"execution-line","fullLine",false);
+    };
+    var undraw_execution_paused=function(){
+        if(execution_location_marker_id!==undefined)codeEditor.getSession().removeMarker(execution_location_marker_id);
+        if(execution_location_line_id!==undefined)codeEditor.getSession().removeMarker(execution_location_line_id);
+    };
+    
     
     // options
     var radio_interactive_yes=document.getElementById("radio-interactive-yes");
@@ -376,4 +508,12 @@ window.addEventListener("load",function(){
     });
     
     
+    
+    // buttons
+    var show_execution_only_buttons=function(){
+        Array.prototype.forEach.call(document.getElementsByClassName("execution-only"),function(el){el.classList.remove("displaynone");});
+    };
+    var hide_execution_only_buttons=function(){
+        Array.prototype.forEach.call(document.getElementsByClassName("execution-only"),function(el){el.classList.add("displaynone");});
+    };
 });
