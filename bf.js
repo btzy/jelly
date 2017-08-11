@@ -309,6 +309,13 @@ window.addEventListener("load",function(){
                                 console.log("Executed in "+Math.round(end_time-start_time)+" ms.");
                                 executionSpan.firstChild.nodeValue="Executed in "+Math.round(end_time-start_time)+" ms.";
                             }
+                            else if(message.data.type==="parseerror"){
+                                executionSpan.firstChild.nodeValue="";
+                                compilationSpan.firstChild.nodeValue="Parsing failed, there may be unmatched brackets.";
+                            }
+                            else if(message.data.type==="runtimeerror"){
+                                executionSpan.firstChild.nodeValue="Runtime error.";
+                            }
                             else{
                                 executionSpan.firstChild.nodeValue="Execution failed.";
                             }
@@ -421,6 +428,7 @@ window.addEventListener("load",function(){
         execution_location_marker_id=codeEditor.getSession().addMarker(range,"execution-position","text",false);
         var range=new Range(pos.row,0,pos.row,Number.POSITIVE_INFINITY);
         execution_location_line_id=codeEditor.getSession().addMarker(range,"execution-line","fullLine",false);
+        codeEditor.scrollToLine(pos.row,true,false,function(){});
     };
     var undraw_execution_paused=function(){
         if(execution_location_marker_id!==undefined)codeEditor.getSession().removeMarker(execution_location_marker_id);

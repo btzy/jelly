@@ -46,7 +46,7 @@ JellyBFInterpreter.RunResult={
 };
 // all runtime errors are checked *before* executing the instruction
 JellyBFInterpreter.prototype.run=function(){
-    while(this.instruction_ptr!=Number.MAX_SAFE_INTEGER){
+    while(this.instruction_ptr!==Number.MAX_SAFE_INTEGER){
         if(this.code[this.instruction_ptr]==="<"){
             if(this.memory_ptr===0)throw JellyBFInterpreter.RuntimeError.INVALID_MEMORY_ACCESS;
             --this.memory_ptr;
