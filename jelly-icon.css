@@ -1,0 +1,43 @@
+@font-face {
+  font-family: 'Jelly-Icon';
+  src:
+    url('fonts/Jelly-Icon.ttf?gfgvbp') format('truetype'),
+    url('fonts/Jelly-Icon.woff?gfgvbp') format('woff'),
+    url('fonts/Jelly-Icon.svg?gfgvbp#Jelly-Icon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.jelly-icon {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'Jelly-Icon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.jelly-icon-compile:before {
+  content: "\2699";
+}
+.jelly-icon-run:before {
+  content: "\23f5";
+}
+.jelly-icon-compile-run:before {
+  content: "\f200";
+}
+.jelly-icon-stop:before {
+  content: "\23f9";
+}
+.jelly-icon-pause:before {
+  content: "\23f8";
+}
+.jelly-icon-step:before {
+  content: "\f201";
+}

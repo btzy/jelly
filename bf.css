@@ -134,7 +134,7 @@ body>.wrapper>*{
     display:block;
 }
 
-#header .headerbutton .material-icons{
+#header .headerbutton .material-icons, #header .headerbutton .jelly-icon{
     flex:0 0 26px;
     line-height:26px;
     font-size:26px;
