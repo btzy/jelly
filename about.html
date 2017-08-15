@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>About Jelly</title>
+        <link href="https://fonts.googleapis.com/css?family=Chewy|Signika" rel="stylesheet">
+        <link href="jelly-icon.css" rel="stylesheet">
+        <link rel="stylesheet" href="bf.css" />
+    </head>
+    <body>
+        <div class="wrapper">
+            <div id="header">
+                <div class="wrapper">
+                    <a class="title" href="bf.html"><span class="jelly">Jelly</span> Compiler for Brainfuck</a>
+                    <div class="extraspace"></div>
+                    <a id="helpbutton" class="headerbutton" title="Help (F1)" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-help"></i><div class="button-name">Help</div></a>
+                    <a id="infobutton" class="headerbutton" title="About Jelly" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-about"></i><div class="button-name">About</div></a>
+                    <div class="spaceend"></div>
+                </div>
+            </div>
+            <div id="about">
+                <p>Jelly is a browser-based compiler, debugger, and IDE for the <a href="https://en.wikipedia.org/wiki/Brainfuck">brainfuck</a> programming language.  While originally conceived only as a compiler, Jelly has evolved to include a debug-mode interpreter with step-through support familiar to users of standard desktop IDEs.  Unlike some web-based compilers, compilation and interpretation are both done locally on the browser (in a WebWorker).  In fact, Jelly does not interact with any servers once it is fully loaded in the browser.</p>
+                <p>While all of Jelly is written in JavaScript, the Jelly compiler compiles brainfuck to WebAssembly, which is then compiled by the browser to native code.  Together with its moderate optimization capabilities, Jelly is probably the fastest brainfuck compiler or interpreter in existence that runs fully in the browser (please tell me if you find something faster).</p>
+                <p>The Jelly interpreter supports various debugging features such as breakpointing, pausing execution, and step-through debugging.  When execution is paused, the state of the brainfuck tape may be viewed and modified before continuing execution.  Even with the presence of such capabilities, the interpreter is relatively fast, and is likely to be the fastest browser-based brainfuck interpreter available.</p>
+                <p>Jelly also supports an "interactive" mode, which works similar to a terminal/console, where the program will wait for input from the user when necessary.  This is the preferred mode of usage as it allows output to be displayed before the brainfuck program terminates, which may be useful for long-running programs.  This is implemented via SharedArrayBuffer, so browser support is required.</p>
+                <p>With all these awesome features, Jelly is the undoubted leader for browser-based brainfuck development!&nbsp;&nbsp;:)</p>
+                <p>Jelly is a personal project to play around with WebAssembly and to make a simple compiler, and is hosted from <a href="https://github.com/btzy/jelly">this GitHub repository</a> (warning: messy code).  The icons on the top bar are also made specifically for Jelly, with SVG files present in the same repository.  The Jelly IDE uses the <a href="https://ace.c9.io/">Ace</a> code editor.</p>
+            </div>
+        </div>
+        
+    </body>
+</html>

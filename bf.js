@@ -1,3 +1,4 @@
+// TODO: show data cells when paused
 window.addEventListener("load",function(){
     if(!window.WebAssembly){
         alert("This browser does not support WebAssembly, which is required to use this compiler.  Chrome 57+, Firefox 52+ and Opera 44+ are great browsers that do support WebAssembly, and they're free!");
@@ -41,6 +42,7 @@ window.addEventListener("load",function(){
     var downloadbutton=document.getElementById("downloadbutton");
     var compilebutton=document.getElementById("compilebutton");
     var runbutton=document.getElementById("runbutton");
+    var stopbutton=document.getElementById("stopbutton");
     var continuebutton=document.getElementById("continuebutton");
     var stepbutton=document.getElementById("stepbutton");
     
@@ -63,6 +65,10 @@ window.addEventListener("load",function(){
         else if(e.key==="F5"){ // F5
             e.preventDefault();
             runbutton.click();
+        }
+        else if(e.key==="F4"){ // F8
+            e.preventDefault();
+            stopbutton.click();
         }
         else if(e.key==="F8"){ // F8
             e.preventDefault();
@@ -163,8 +169,12 @@ window.addEventListener("load",function(){
         var to_terminate=false;
         processHandlerTerminator=function(){
             to_terminate=true;
-            processHandler.terminate();
-            processHandler=undefined;
+            codeEditor.setReadOnly(false);
+            if(processHandler){
+                processHandler.terminate();
+                processHandler=undefined;
+            }
+            isCompiling=false;
         };
         isCompiling=true;
         processHandler=new JellyBFProcessHandler();
@@ -177,8 +187,8 @@ window.addEventListener("load",function(){
                 processHandler.compile(codeEditor.getValue(),{debug:(compilemode==="debug")},function(message){
                     if(!to_terminate){
                         isCompiling=false;
-                        processHandlerTerminator=undefined;
                         codeEditor.setReadOnly(false);
+                        processHandlerTerminator=undefined;
                         if(message.success){
                             codeCompiled=true;
                             var end_time=Date.now();
@@ -221,14 +231,23 @@ window.addEventListener("load",function(){
                 runTerminator();
             }
             var to_terminate=false;
-            runTerminator=function(){
+            runTerminator=function(success){
                 to_terminate=true;
+                breakpointBuffer=undefined;
+                globalPauseBuffer=undefined;
+                hide_execution_only_buttons();
+                codeEditor.setReadOnly(false);
+                if(!success&&processHandler){
+                    processHandler.terminate();
+                    processHandler=undefined;
+                }
             };
             executionSpan.firstChild.nodeValue="Executing…";
             var start_time=Date.now();
             if(interactive==="no"){
                 processHandler.execute(inputEditor.getValue(),{debug:(compilemode==="debug")},function(message){
                     if(!to_terminate){
+                        runTerminator(true);
                         runTerminator=undefined;
                         if(message.success){
                             var end_time=Date.now();
@@ -259,6 +278,7 @@ window.addEventListener("load",function(){
                         }
                     },function(message){
                         if(!to_terminate){
+                            runTerminator(true);
                             runTerminator=undefined;
                             codeEditor.setReadOnly(false);
                             if(message.success){
@@ -272,6 +292,7 @@ window.addEventListener("load",function(){
                             }
                         }
                     });
+                    show_execution_only_buttons(false);
                 }
                 else{
                     interactiveConsole.clear();
@@ -298,11 +319,8 @@ window.addEventListener("load",function(){
                         }
                     },function(message){
                         if(!to_terminate){
+                            runTerminator(true);
                             runTerminator=undefined;
-                            breakpointBuffer=undefined;
-                            globalPauseBuffer=undefined;
-                            hide_execution_only_buttons();
-                            codeEditor.setReadOnly(false);
                             if(message.success){
                                 var end_time=Date.now();
                                 //outputEditor.setValue(message.output,1);
@@ -329,31 +347,49 @@ window.addEventListener("load",function(){
                         }
                         draw_execution_paused(options.index);
                         continuehandler=options.resume;
-                        
                     });
-                    show_execution_only_buttons();
+                    show_execution_only_buttons(true);
                 }
             }
         }
     });
+    
+    stopbutton.addEventListener("click",function(){
+        if(runTerminator)runTerminator();
+        console.log("Execution stopped.");
+        executionSpan.firstChild.nodeValue="Execution stopped.";
+    });
+    
+    
     var continuehandler=undefined;
     var stephandler=undefined;
+    var execution_is_paused=false;
     
     
     continuebutton.addEventListener("click",function(){
-        undraw_execution_paused();
-        if(continuehandler&&globalPauseBuffer){
+        if(execution_is_paused){
+            if(continuehandler&&globalPauseBuffer){
+                // turn off the global pauser
+                var arr=new Uint8Array(globalPauseBuffer);
+                Atomics.store(arr,0,0);
+                undraw_execution_paused();
+                continuehandler();
+            }
+        }
+        else{
+            // turn on the global pauser
             var arr=new Uint8Array(globalPauseBuffer);
-            Atomics.store(arr,0,0);
-            continuehandler();
+            Atomics.store(arr,0,1);
         }
     });
     stepbutton.addEventListener("click",function(){
-        undraw_execution_paused();
-        if(continuehandler&&globalPauseBuffer){
-            var arr=new Uint8Array(globalPauseBuffer);
-            Atomics.store(arr,0,1);
-            continuehandler();
+        if(execution_is_paused){
+            if(continuehandler&&globalPauseBuffer){
+                // turn off the global pauser
+                var arr=new Uint8Array(globalPauseBuffer);
+                Atomics.store(arr,0,1);
+                continuehandler();
+            }
         }
     });
     
@@ -397,7 +433,7 @@ window.addEventListener("load",function(){
                     remove_bp(oldbp);
                 }
                 else{
-                    if(fix_valid_range(range)){
+                    if(fix_valid_range(range)&&"<>+-[].,".includes(document.getTextRange(range))){
                         var id=session.addMarker(range,"breakpoint","text",false);
                         var oldbp={anchor:range.start,id:id};
                         breakpoints.push(oldbp);
@@ -429,10 +465,32 @@ window.addEventListener("load",function(){
         var range=new Range(pos.row,0,pos.row,Number.POSITIVE_INFINITY);
         execution_location_line_id=codeEditor.getSession().addMarker(range,"execution-line","fullLine",false);
         codeEditor.scrollToLine(pos.row,true,false,function(){});
+        
+        var ic_classlist=continuebutton.getElementsByClassName("jelly-icon")[0].classList;
+        ic_classlist.remove("jelly-icon-pause");
+        ic_classlist.add("jelly-icon-run");
+        {
+            var nn=continuebutton.getElementsByClassName("button-name")[0];
+            while(nn.firstChild)nn.removeChild(nn.firstChild);
+            nn.appendChild(document.createTextNode("Continue"));
+        }
+        execution_is_paused=true;
+        stepbutton.classList.remove("displaynone");
     };
     var undraw_execution_paused=function(){
         if(execution_location_marker_id!==undefined)codeEditor.getSession().removeMarker(execution_location_marker_id);
         if(execution_location_line_id!==undefined)codeEditor.getSession().removeMarker(execution_location_line_id);
+        
+        var ic_classlist=continuebutton.getElementsByClassName("jelly-icon")[0].classList;
+        ic_classlist.remove("jelly-icon-run");
+        ic_classlist.add("jelly-icon-pause");
+        {
+            var nn=continuebutton.getElementsByClassName("button-name")[0];
+            while(nn.firstChild)nn.removeChild(nn.firstChild);
+            nn.appendChild(document.createTextNode("Pause"));
+        }
+        execution_is_paused=false;
+        stepbutton.classList.add("displaynone");
     };
     
     
@@ -518,10 +576,11 @@ window.addEventListener("load",function(){
     
     
     // buttons
-    var show_execution_only_buttons=function(){
-        Array.prototype.forEach.call(document.getElementsByClassName("execution-only"),function(el){el.classList.remove("displaynone");});
+    var show_execution_only_buttons=function(show_debug){
+        Array.prototype.forEach.call(document.getElementsByClassName("execution-only"),function(el){if(show_debug||!el.classList.contains("debug-only"))el.classList.remove("displaynone");});
     };
     var hide_execution_only_buttons=function(){
         Array.prototype.forEach.call(document.getElementsByClassName("execution-only"),function(el){el.classList.add("displaynone");});
+        undraw_execution_paused();
     };
 });

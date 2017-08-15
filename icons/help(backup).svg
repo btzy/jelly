@@ -15,7 +15,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.2 (5c3e80d, 2017-08-06)"
-   sodipodi:docname="pause.svg">
+   sodipodi:docname="help(backup).svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="15.839192"
-     inkscape:cx="-10.566323"
-     inkscape:cy="10.33869"
+     inkscape:zoom="16"
+     inkscape:cx="-6.3987229"
+     inkscape:cy="13.603051"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -54,19 +54,17 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-290.12082)">
-    <rect
-       style="opacity:1;fill:#000000;stroke-width:0.25240135"
-       id="rect816"
-       width="1.3229166"
-       height="4.2333336"
-       x="1.5875"
-       y="291.44373" />
-    <rect
-       style="opacity:1;fill:#000000;stroke-width:0.25240135"
-       id="rect816-0"
-       width="1.3229166"
-       height="4.2333336"
-       x="3.96875"
-       y="291.44373" />
+    <circle
+       style="opacity:1;fill:#000000;stroke-width:0.20766722"
+       id="path1142"
+       cx="3.4395833"
+       cy="295.67706"
+       r="0.79374999" />
+    <path
+       id="path816"
+       style="opacity:1;fill:none;stroke:#000000;stroke-width:1.0583334;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 2.3813031,291.95783 c 1.9e-6,-0.5845 0.4738333,-1.05833 1.0583334,-1.05833 0.5845001,0 1.0583315,0.47383 1.0583334,1.05833 0.00119,0.89766 -1.0583866,1.33418 -1.0583866,2.13174"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cscc" />
   </g>
 </svg>

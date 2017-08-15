@@ -18,19 +18,20 @@
         <div class="wrapper">
             <div id="header">
                 <div class="wrapper">
-                    <div class="title"><span class="jelly">Jelly</span> Compiler for Brainfuck</div>
+                    <a class="title" href="bf.html"><span class="jelly">Jelly</span> Compiler for Brainfuck</a>
                     <div class="vertical-bar"></div>
-                    <div id="openbutton" class="headerbutton" title="Open local file (Ctrl+O)"><input type="file" id="openbuttonfilepicker" /><i class="material-icons">folder_open</i><div class="button-name">Open</div></div>
+                    <div id="openbutton" class="headerbutton" title="Open local file (Ctrl+O)"><input type="file" id="openbuttonfilepicker" /><i class="jelly-icon jelly-icon-open"></i><div class="button-name">Open</div></div>
                     <div id="downloadbutton" class="headerbutton" title="Download code as file (Ctrl+S)"><i class="material-icons">file_download</i><div class="button-name">Download</div></div>
                     <div class="vertical-bar"></div>
                     <div id="compilebutton" class="headerbutton" title="Compile (F6)"><i class="jelly-icon jelly-icon-compile"></i><div class="button-name">Compile</div></div>
-                    <div id="runbutton" class="headerbutton" title="Compile &amp; Run (F5)"><i class="jelly-icon jelly-icon-compile-run"></i><div class="button-name">Compile &amp; Run</div></div>
+                    <div id="runbutton" class="headerbutton" title="Compile &amp; Run (F5)"><i class="jelly-icon jelly-icon-compile-run"></i><div class="button-name" style="white-space:nowrap;">Run</div></div>
                     <div class="vertical-bar execution-only displaynone"></div>
-                    <div id="continuebutton" class="headerbutton execution-only displaynone" title="Pause/Continue (F8)"><i class="jelly-icon jelly-icon-run"></i><div class="button-name">Continue</div></div>
-                    <div id="stepbutton" class="headerbutton execution-only displaynone" title="Step (F10)"><i class="jelly-icon jelly-icon-step"></i><div class="button-name">Step</div></div>
+                    <div id="stopbutton" class="headerbutton execution-only displaynone" title="Stop (F4)"><i class="jelly-icon jelly-icon-stop"></i><div class="button-name">Stop</div></div>
+                    <div id="continuebutton" class="headerbutton execution-only debug-only displaynone" title="Pause/Continue (F8)"><i class="jelly-icon jelly-icon-pause"></i><div class="button-name">Pause</div></div>
+                    <div id="stepbutton" class="headerbutton execution-only debug-only  displaynone" title="Step (F10)"><i class="jelly-icon jelly-icon-step"></i><div class="button-name">Step</div></div>
                     <div class="extraspace"></div>
-                    <div id="helpbutton" class="headerbutton" title="Help (F1)"><i class="material-icons">help</i><div class="button-name">Help</div></div>
-                    <div id="infobutton" class="headerbutton" title="About Jelly"><i class="material-icons">info</i><div class="button-name">About</div></div>
+                    <a id="helpbutton" class="headerbutton" title="Help (F1)" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-help"></i><div class="button-name">Help</div></a>
+                    <a id="infobutton" class="headerbutton" title="About Jelly" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-about"></i><div class="button-name">About</div></a>
                     <div class="spaceend"></div>
                 </div>
             </div>
