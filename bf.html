@@ -12,6 +12,7 @@
         <script src="interactive-console.js" type="text/javascript"></script>
         <script src="flex-splitter.js" type="text/javascript"></script>
         <script src="jelly-bf-processhandler.js" type="text/javascript"></script>
+        <script src="jelly-memoryview.js" type="text/javascript"></script>
         <script src="bf.js" type="text/javascript"></script>
     </head>
     <body>
@@ -36,7 +37,35 @@
                 </div>
             </div>
             <div id="codeblock">
-                <div class="editor"></div>
+                <div class="editor-wrapper"><div class="editor"></div></div>
+                <div id="memoryview" class="displaynone">
+                    <div class="left-goto goto">
+                        <div class="goto-label">Go to cell</div>
+                        <div class="goto-input-wrapper"><input type="text" /></div>
+                    </div>
+                    <div class="left-arrow arrow"><div class="wrapper"><i class="jelly-icon jelly-icon-left-arrow"></i></div></div>
+                    <div class="memory-cells">
+                        <div class="cellwrapper">
+                            <div class="cell">1</div>
+                            <div class="cell">2</div>
+                            <div class="cell">3</div>
+                            <div class="cell">4</div>
+                            <div class="cell">5</div>
+                        </div>
+                        <div class="labelwrapper">
+                            <div class="label">1</div>
+                            <div class="label">2</div>
+                            <div class="label">3</div>
+                            <div class="label">4</div>
+                            <div class="label">5</div>
+                        </div>
+                    </div>
+                    <div class="right-arrow arrow"><div class="wrapper"><i class="jelly-icon jelly-icon-right-arrow"></i></div></div>
+                    <div class="right-goto goto">
+                        <div class="goto-label">Go to cell</div>
+                        <div class="goto-input-wrapper"><input type="text" /></div>
+                    </div>
+                </div>
             </div>
             <div class="horizontal-spacer">
                 <div class="actual-spacer"></div>

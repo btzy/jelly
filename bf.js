@@ -37,6 +37,10 @@ window.addEventListener("load",function(){
         alert(e);
     });*/
     
+    // memoryview
+    var memoryview=document.getElementById("memoryview");
+    var memoryviewmanager=new MemoryView(memoryview.getElementsByClassName("memory-cells")[0],new Uint8Array(30000),0,29999);
+    
     // buttons
     var openbutton=document.getElementById("openbutton");
     var downloadbutton=document.getElementById("downloadbutton");
@@ -476,6 +480,7 @@ window.addEventListener("load",function(){
         }
         execution_is_paused=true;
         stepbutton.classList.remove("displaynone");
+        memoryview.classList.remove("displaynone");
     };
     var undraw_execution_paused=function(){
         if(execution_location_marker_id!==undefined)codeEditor.getSession().removeMarker(execution_location_marker_id);
@@ -491,6 +496,7 @@ window.addEventListener("load",function(){
         }
         execution_is_paused=false;
         stepbutton.classList.add("displaynone");
+        memoryview.classList.add("displaynone");
     };
     
     
