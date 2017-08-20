@@ -12,30 +12,68 @@
         <script src="interactive-console.js" type="text/javascript"></script>
         <script src="flex-splitter.js" type="text/javascript"></script>
         <script src="jelly-bf-processhandler.js" type="text/javascript"></script>
+        <script src="jelly-memoryview.js" type="text/javascript"></script>
         <script src="bf.js" type="text/javascript"></script>
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+          ga('create','UA-53448064-1','auto');
+          ga('send','pageview');
+        </script>
     </head>
     <body>
         <div class="wrapper">
             <div id="header">
                 <div class="wrapper">
-                    <div class="title"><span class="jelly">Jelly</span> Compiler for Brainfuck</div>
+                    <a class="title" href="bf.html"><span class="jelly">Jelly</span> Compiler for Brainfuck</a>
                     <div class="vertical-bar"></div>
-                    <div id="openbutton" class="headerbutton" title="Open local file (Ctrl+O)"><input type="file" id="openbuttonfilepicker" /><i class="material-icons">folder_open</i><div class="button-name">Open</div></div>
+                    <div id="openbutton" class="headerbutton" title="Open local file (Ctrl+O)"><input type="file" id="openbuttonfilepicker" /><i class="jelly-icon jelly-icon-open"></i><div class="button-name">Open</div></div>
                     <div id="downloadbutton" class="headerbutton" title="Download code as file (Ctrl+S)"><i class="material-icons">file_download</i><div class="button-name">Download</div></div>
                     <div class="vertical-bar"></div>
                     <div id="compilebutton" class="headerbutton" title="Compile (F6)"><i class="jelly-icon jelly-icon-compile"></i><div class="button-name">Compile</div></div>
-                    <div id="runbutton" class="headerbutton" title="Compile &amp; Run (F5)"><i class="jelly-icon jelly-icon-compile-run"></i><div class="button-name">Compile &amp; Run</div></div>
+                    <div id="runbutton" class="headerbutton" title="Compile &amp; Run (F5)"><i class="jelly-icon jelly-icon-compile-run"></i><div class="button-name" style="white-space:nowrap;">Run</div></div>
                     <div class="vertical-bar execution-only displaynone"></div>
-                    <div id="continuebutton" class="headerbutton execution-only displaynone" title="Pause/Continue (F8)"><i class="jelly-icon jelly-icon-run"></i><div class="button-name">Continue</div></div>
-                    <div id="stepbutton" class="headerbutton execution-only displaynone" title="Step (F10)"><i class="jelly-icon jelly-icon-step"></i><div class="button-name">Step</div></div>
+                    <div id="stopbutton" class="headerbutton execution-only displaynone" title="Stop (F4)"><i class="jelly-icon jelly-icon-stop"></i><div class="button-name">Stop</div></div>
+                    <div id="continuebutton" class="headerbutton execution-only debug-only displaynone" title="Pause/Continue (F8)"><i class="jelly-icon jelly-icon-pause"></i><div class="button-name">Pause</div></div>
+                    <div id="stepbutton" class="headerbutton execution-only debug-only  displaynone" title="Step (F10)"><i class="jelly-icon jelly-icon-step"></i><div class="button-name">Step</div></div>
                     <div class="extraspace"></div>
-                    <div id="helpbutton" class="headerbutton" title="Help (F1)"><i class="material-icons">help</i><div class="button-name">Help</div></div>
-                    <div id="infobutton" class="headerbutton" title="About Jelly"><i class="material-icons">info</i><div class="button-name">About</div></div>
+                    <a id="helpbutton" class="headerbutton" title="Help (F1)" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-help"></i><div class="button-name">Help</div></a>
+                    <a id="infobutton" class="headerbutton" title="About Jelly" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-about"></i><div class="button-name">About</div></a>
                     <div class="spaceend"></div>
                 </div>
             </div>
             <div id="codeblock">
-                <div class="editor"></div>
+                <div class="editor-wrapper"><div class="editor"></div></div>
+                <div id="memoryview" class="displaynone">
+                    <div class="left-goto goto">
+                        <div class="goto-label">Go to cell</div>
+                        <div class="goto-input-wrapper"><input type="text" /></div>
+                    </div>
+                    <div class="left-arrow arrow"><div class="wrapper"><i class="jelly-icon jelly-icon-left-arrow"></i></div></div>
+                    <div class="memory-cells">
+                        <div class="cellwrapper">
+                            <div class="cell">1</div>
+                            <div class="cell">2</div>
+                            <div class="cell">3</div>
+                            <div class="cell">4</div>
+                            <div class="cell">5</div>
+                        </div>
+                        <div class="labelwrapper">
+                            <div class="label">1</div>
+                            <div class="label">2</div>
+                            <div class="label">3</div>
+                            <div class="label">4</div>
+                            <div class="label">5</div>
+                        </div>
+                    </div>
+                    <div class="right-arrow arrow"><div class="wrapper"><i class="jelly-icon jelly-icon-right-arrow"></i></div></div>
+                    <div class="right-goto goto">
+                        <div class="goto-label">Go to cell</div>
+                        <div class="goto-input-wrapper"><input type="text" /></div>
+                    </div>
+                </div>
             </div>
             <div class="horizontal-spacer">
                 <div class="actual-spacer"></div>

@@ -7,6 +7,8 @@ blue (95%): rgb(230,240,255)
 red (30%): rgb(153,0,0)
 
 grey (25%): rgb(64,64,64)
+
+yellow (90%): rgb(255,255,204)
 */
 
 html, body{
@@ -73,6 +75,9 @@ body>.wrapper>*{
 #header .title{
     flex:0 0 auto;
     padding:0px 20px;
+    display:block;
+    color:inherit;
+    text-decoration:inherit;
 }
 
 #header .title .jelly{
@@ -107,6 +112,8 @@ body>.wrapper>*{
     cursor:pointer;
     background-color:rgba(255,255,255,0);
     transition:background-color 0.5s;
+    color:inherit;
+    text-decoration:inherit;
 }
 
 #header .headerbutton:hover{
@@ -180,6 +187,15 @@ body>.wrapper>*{
 
 #codeblock{
     flex:3 3 0px;
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+}
+
+#codeblock .editor-wrapper{
+    flex:1 1 0px;
 }
 
 #codeblock .editor{
@@ -204,6 +220,152 @@ body>.wrapper>*{
     color:orange;
     position:absolute;
 }
+
+#codeblock #memoryview{
+    flex:0 0 50px;
+}
+
+#memoryview{
+    background-color:rgb(255,255,204);
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+    text-align:center;
+}
+
+#memoryview .left-goto{
+    flex:0 0 60px;
+}
+
+#memoryview .right-goto{
+    flex:0 0 60px;
+}
+
+#memoryview .left-arrow{
+    flex:0 0 30px;
+}
+
+#memoryview .right-arrow{
+    flex:0 0 30px;
+}
+
+#memoryview .memory-cells{
+    flex:1 1 0px;
+}
+
+#memoryview .goto{
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+}
+
+#memoryview .goto .goto-label{
+    flex:0 0 12px;
+    font-size:12px;
+    line-height:12px;
+    cursor:default;
+}
+
+#memoryview .goto .goto-input-wrapper{
+    flex:0 0 20px;
+    font-size:14px;
+    line-height:14px;
+    box-sizing:border-box;
+    padding:0 2px;
+}
+
+#memoryview .goto .goto-input-wrapper input{
+    font-family:inherit;
+    font-size:inherit;
+    line-height:inherit;
+    text-align:inherit;
+    height:20px;
+    width:100%;
+    box-sizing:border-box;
+}
+
+#memoryview .arrow{
+    line-height:26px;
+    font-size:26px;
+    display:flex;
+    flex-direction:column;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+    cursor:pointer;
+    background-color:rgba(255,165,0,0);
+    transition:background-color 0.5s;
+}
+
+#memoryview .arrow .wrapper{
+    height:26px;
+    flex:0 0 auto;
+}
+
+#memoryview .arrow:hover{
+    background-color:rgba(255,165,0,0.5);
+}
+
+#memoryview .arrow:active{
+    background-color:rgba(255,165,0,1);
+    transition:background-color 0s;
+}
+
+#memoryview .memory-cells{
+    padding:3px;
+    -webkit-touch-callout: initial;
+    -webkit-user-select: initial;
+    -khtml-user-select: initial;
+    -moz-user-select: initial;
+    -ms-user-select: initial;
+    user-select: initial;
+}
+
+#memoryview .memory-cells .cellwrapper{
+    height:30px;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+    line-height:28px;
+}
+
+#memoryview .memory-cells .cellwrapper .cell{
+    flex:1 1 0px;
+    border:1px solid black;
+}
+
+#memoryview .memory-cells .cellwrapper .cell:not(:first-child){
+    margin-left:-1px;
+}
+
+#memoryview .memory-cells .labelwrapper{
+    height:14px;
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    justify-content:center;
+    align-items:stretch;
+    font-size:12px;
+    line-height:12px;
+}
+
+#memoryview .memory-cells .labelwrapper .label{
+    flex:1 1 0px;
+    border:1px solid transparent;
+}
+
+#memoryview .memory-cells .labelwrapper .label:not(:first-child){
+    margin-left:-1px;
+}
+
+
 
 #compilationinfo{
     flex:0 0 20px;
@@ -494,6 +656,24 @@ body>.wrapper>.horizontal-spacer .actual-spacer{
 
 
 
-.displaynone, #header .displaynone{
+#about{
+    background-color:rgb(204,224,255);
+    flex:1 1 0px;
+    -webkit-touch-callout: initial;
+    -webkit-user-select: initial;
+    -khtml-user-select: initial;
+    -moz-user-select: initial;
+    -ms-user-select: initial;
+    user-select: initial;
+}
+
+#about p{
+    padding-left:20px;
+    padding-right:20px;
+}
+
+
+
+.displaynone, #header .displaynone, #memoryview.displaynone{
     display:none;
 }
