@@ -1540,14 +1540,14 @@ var JellyBF_CloseAndAttemptUnrollLoop = function(codeChunks, options) {
     }
 };
 
-JellyBFInterpreter = function(codeString, get_input, put_output, breakpointuint8array, globalpauseuint8array) {
+JellyBFInterpreter = function(codeString, get_input, put_output, breakpointuint8array, globalpauseuint8array, memoryuint8array) {
     this.code = codeString;
     this.get_input = get_input;
     this.put_output = put_output;
     this.breakpointuint8array = breakpointuint8array;
     this.globalpauseuint8array = globalpauseuint8array;
     this.memory_cells = 3e4;
-    this.memory = new Uint8Array(this.memory_cells);
+    this.memory = memoryuint8array || new Uint8Array(this.memory_cells);
     this.memory_ptr = 0;
     this.next_instruction_index = [];
     this.loop_pair = [];
@@ -1589,7 +1589,7 @@ JellyBFInterpreter.RunResult = {
 };
 
 JellyBFInterpreter.prototype.run = function() {
-    while (this.instruction_ptr != Number.MAX_SAFE_INTEGER) {
+    while (this.instruction_ptr !== Number.MAX_SAFE_INTEGER) {
         if (this.code[this.instruction_ptr] === "<") {
             if (this.memory_ptr === 0) throw JellyBFInterpreter.RuntimeError.INVALID_MEMORY_ACCESS;
             --this.memory_ptr;
@@ -1597,32 +1597,34 @@ JellyBFInterpreter.prototype.run = function() {
             if (this.memory_ptr + 1 === this.memory_cells) throw JellyBFInterpreter.RuntimeError.INVALID_MEMORY_ACCESS;
             ++this.memory_ptr;
         } else if (this.code[this.instruction_ptr] === "+") {
-            this.memory[this.memory_ptr] = this.memory[this.memory_ptr] + 1 & 255;
+            Atomics.add(this.memory, this.memory_ptr, 1);
         } else if (this.code[this.instruction_ptr] === "-") {
-            this.memory[this.memory_ptr] = this.memory[this.memory_ptr] - 1 & 255;
+            Atomics.sub(this.memory, this.memory_ptr, 1);
         } else if (this.code[this.instruction_ptr] === "[") {
-            if (this.memory[this.memory_ptr] === 0) {
+            if (Atomics.load(this.memory, this.memory_ptr) === 0) {
                 this.instruction_ptr = this.loop_pair[this.instruction_ptr];
             }
         } else if (this.code[this.instruction_ptr] === "]") {
-            if (this.memory[this.memory_ptr] !== 0) {
+            if (Atomics.load(this.memory, this.memory_ptr) !== 0) {
                 this.instruction_ptr = this.loop_pair[this.instruction_ptr];
             }
         } else if (this.code[this.instruction_ptr] === ",") {
-            this.memory[this.memory_ptr] = this.get_input();
+            Atomics.store(this.memory, this.memory_ptr, this.get_input());
         } else if (this.code[this.instruction_ptr] === ".") {
-            this.put_output(this.memory[this.memory_ptr]);
+            this.put_output(Atomics.load(this.memory, this.memory_ptr));
         } else {
             throw "Internal error!";
         }
         this.instruction_ptr = this.next_instruction_index[this.instruction_ptr];
         if (this.instruction_ptr !== Number.MAX_SAFE_INTEGER && Atomics.load(this.breakpointuint8array, this.instruction_ptr) !== 0) return {
             type: JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT,
-            index: this.instruction_ptr
+            index: this.instruction_ptr,
+            memory_ptr: this.memory_ptr
         };
         if (this.instruction_ptr !== Number.MAX_SAFE_INTEGER && Atomics.load(this.globalpauseuint8array, 0) !== 0) return {
             type: JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT,
-            index: this.instruction_ptr
+            index: this.instruction_ptr,
+            memory_ptr: this.memory_ptr
         };
     }
     return {
@@ -1712,7 +1714,7 @@ var JellyBFSync = {
         terminate_output();
         return true;
     },
-    interpretInteractive: function(str, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, breakpointuint8array, globalpauseuint8array, options, updatedOutputCallback, requestInputCallback) {
+    interpretInteractive: function(str, inputuint8array, outputuint8array, inputwaitint32array, outputwaitint32array, breakpointuint8array, globalpauseuint8array, memoryuint8array, options, updatedOutputCallback, requestInputCallback) {
         var WaitArrayId = {
             READ_HEAD: 0,
             WRITE_HEAD: 1,
@@ -1757,7 +1759,7 @@ var JellyBFSync = {
             Atomics.store(outputwaitint32array, WaitArrayId.WRITE_HEAD, output_write_head + 1);
             updatedOutputCallback();
         };
-        var instance = new JellyBFInterpreter(str, get_input, put_output, breakpointuint8array, globalpauseuint8array);
+        var instance = new JellyBFInterpreter(str, get_input, put_output, breakpointuint8array, globalpauseuint8array, memoryuint8array);
         return {
             run: function() {
                 var res = instance.run();
@@ -1844,8 +1846,9 @@ var JellyBFSync = {
             var options = message.options;
             var breakpointbuffer = message.breakpointbuffer;
             var globalpausebuffer = message.globalpausebuffer;
+            var memorybuffer = message.memorybuffer;
             try {
-                interpretstate = JellyBFSync.interpretInteractive(sourcecode, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), new Uint8Array(breakpointbuffer), new Uint8Array(globalpausebuffer), options, function() {
+                interpretstate = JellyBFSync.interpretInteractive(sourcecode, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), new Uint8Array(breakpointbuffer), new Uint8Array(globalpausebuffer), memorybuffer ? new Uint8Array(memorybuffer) : undefined, options, function() {
                     self.postMessage({
                         type: "output-updated"
                     });
@@ -1887,12 +1890,14 @@ var JellyBFSync = {
             } else if (ret.type === JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT) {
                 self.postMessage({
                     type: "interpret-breakpoint",
-                    index: ret.index
+                    index: ret.index,
+                    memory_ptr: ret.memory_ptr
                 });
             } else if (ret.type === JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT) {
                 self.postMessage({
                     type: "interpret-paused",
-                    index: ret.index
+                    index: ret.index,
+                    memory_ptr: ret.memory_ptr
                 });
             } else {
                 self.postMessage({

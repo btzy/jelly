@@ -164,16 +164,18 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
         delete options.breakpointBuffer;
         delete options.globalPauseBuffer;
         
+        var memoryBuffer=new SharedArrayBuffer(30000);
+        
         var resumer=function(){
             that.worker.postMessage({type:"interpret-continue"});
         };
         
         var interpretHandler=function(e){
             if(e.data.type==="interpret-breakpoint"){
-                pausedCallback({breakpoint:true,resume:resumer,index:e.data.index});
+                pausedCallback({breakpoint:true,resume:resumer,index:e.data.index,memoryuint8array:new Uint8Array(memoryBuffer),memory_ptr:e.data.memory_ptr});
             }
             else if(e.data.type==="interpret-paused"){
-                pausedCallback({breakpoint:false,resume:resumer,index:e.data.index});
+                pausedCallback({breakpoint:false,resume:resumer,index:e.data.index,memoryuint8array:new Uint8Array(memoryBuffer),memory_ptr:e.data.memory_ptr});
             }
         };
         
@@ -205,7 +207,7 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
             doneCallback({success:false});
         });
         
-        this.worker.postMessage({type:"interpret-interactive",sourcecode:sourcecode,inputbuffer:inputBuffer,outputbuffer:outputBuffer,inputwaitbuffer:inputWaitBuffer,outputwaitbuffer:outputWaitBuffer,breakpointbuffer:breakpointBuffer,globalpausebuffer:globalpauseBuffer,options:options});
+        this.worker.postMessage({type:"interpret-interactive",sourcecode:sourcecode,inputbuffer:inputBuffer,outputbuffer:outputBuffer,inputwaitbuffer:inputWaitBuffer,outputwaitbuffer:outputWaitBuffer,breakpointbuffer:breakpointBuffer,globalpausebuffer:globalpauseBuffer,memorybuffer:memoryBuffer,options:options});
     }
     else{
         var that=this;

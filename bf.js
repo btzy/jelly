@@ -39,7 +39,7 @@ window.addEventListener("load",function(){
     
     // memoryview
     var memoryview=document.getElementById("memoryview");
-    var memoryviewmanager=new MemoryView(memoryview.getElementsByClassName("memory-cells")[0],new Uint8Array(30000),0,29999);
+    var memoryviewmanager=undefined;
     
     // buttons
     var openbutton=document.getElementById("openbutton");
@@ -349,7 +349,7 @@ window.addEventListener("load",function(){
                         else{
                             console.log("Execution paused.");
                         }
-                        draw_execution_paused(options.index);
+                        draw_execution_paused(options.index,options.memoryuint8array,options.memory_ptr);
                         continuehandler=options.resume;
                     });
                     show_execution_only_buttons(true);
@@ -460,7 +460,7 @@ window.addEventListener("load",function(){
         }
     });
     var execution_location_marker_id=undefined,execution_location_line_id=undefined;
-    var draw_execution_paused=function(index){
+    var draw_execution_paused=function(index,memoryuint8array,memory_ptr){
         undraw_execution_paused();
         var Range=ace.require('ace/range').Range;
         var pos=codeEditor.getSession().getDocument().indexToPosition(index);
@@ -481,6 +481,8 @@ window.addEventListener("load",function(){
         execution_is_paused=true;
         stepbutton.classList.remove("displaynone");
         memoryview.classList.remove("displaynone");
+        codeEditor.resize();
+        memoryviewmanager=new MemoryView(memoryview.getElementsByClassName("memory-cells")[0],memoryuint8array,0,29999,memory_ptr);
     };
     var undraw_execution_paused=function(){
         if(execution_location_marker_id!==undefined)codeEditor.getSession().removeMarker(execution_location_marker_id);
@@ -497,6 +499,11 @@ window.addEventListener("load",function(){
         execution_is_paused=false;
         stepbutton.classList.add("displaynone");
         memoryview.classList.add("displaynone");
+        codeEditor.resize();
+        if(memoryviewmanager){
+            memoryviewmanager.clear();
+            memoryviewmanager=undefined;
+        }
     };
     
     

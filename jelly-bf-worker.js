@@ -60,8 +60,9 @@
                 var options=message.options;
                 var breakpointbuffer=message.breakpointbuffer;
                 var globalpausebuffer=message.globalpausebuffer;
+                var memorybuffer=message.memorybuffer;
                 try{
-                    interpretstate=JellyBFSync.interpretInteractive(sourcecode, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), new Uint8Array(breakpointbuffer), new Uint8Array(globalpausebuffer),options,function(){
+                    interpretstate=JellyBFSync.interpretInteractive(sourcecode, new Uint8Array(inputbuffer), new Uint8Array(outputbuffer), new Int32Array(inputwaitbuffer), new Int32Array(outputwaitbuffer), new Uint8Array(breakpointbuffer), new Uint8Array(globalpausebuffer),memorybuffer?(new Uint8Array(memorybuffer)):undefined,options,function(){
                         self.postMessage({type:"output-updated"});
                     },function(readhead){
                         self.postMessage({type:"input-requested",readhead:readhead});
@@ -88,10 +89,10 @@
                     interpretstate=undefined;
                 }
                 else if(ret.type===JellyBFInterpreter.RunResult.PAUSED_AT_BREAKPOINT){
-                    self.postMessage({type:"interpret-breakpoint",index:ret.index});
+                    self.postMessage({type:"interpret-breakpoint",index:ret.index,memory_ptr:ret.memory_ptr});
                 }
                 else if(ret.type===JellyBFInterpreter.RunResult.PAUSED_WITHOUT_BREAKPOINT){
-                    self.postMessage({type:"interpret-paused",index:ret.index});
+                    self.postMessage({type:"interpret-paused",index:ret.index,memory_ptr:ret.memory_ptr});
                 }
                 else{
                     self.postMessage({type:"interpreterror"});

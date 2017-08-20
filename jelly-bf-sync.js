@@ -84,7 +84,7 @@ var JellyBFSync={
         terminate_output();
         return true;
     },
-    interpretInteractive:function(str,inputuint8array,outputuint8array,inputwaitint32array,outputwaitint32array,breakpointuint8array,globalpauseuint8array,options,updatedOutputCallback,requestInputCallback){
+    interpretInteractive:function(str,inputuint8array,outputuint8array,inputwaitint32array,outputwaitint32array,breakpointuint8array,globalpauseuint8array,memoryuint8array,options,updatedOutputCallback,requestInputCallback){
         var WaitArrayId={
             READ_HEAD:0,
             WRITE_HEAD:1,
@@ -132,7 +132,7 @@ var JellyBFSync={
             Atomics.store(outputwaitint32array,WaitArrayId.WRITE_HEAD,output_write_head+1);
             updatedOutputCallback();
         };
-        var instance=new JellyBFInterpreter(str,get_input,put_output,breakpointuint8array,globalpauseuint8array);
+        var instance=new JellyBFInterpreter(str,get_input,put_output,breakpointuint8array,globalpauseuint8array,memoryuint8array);
         return {
             run:function(){
                 var res=instance.run();
