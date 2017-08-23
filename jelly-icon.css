@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'Jelly-Icon';
   src:
-    url('fonts/Jelly-Icon.ttf?32s6nr') format('truetype'),
-    url('fonts/Jelly-Icon.woff?32s6nr') format('woff'),
-    url('fonts/Jelly-Icon.svg?32s6nr#Jelly-Icon') format('svg');
+    url('fonts/Jelly-Icon.ttf?hrgy3s') format('truetype'),
+    url('fonts/Jelly-Icon.woff?hrgy3s') format('woff'),
+    url('fonts/Jelly-Icon.svg?hrgy3s#Jelly-Icon') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -25,6 +25,9 @@
 
 .jelly-icon-open:before {
   content: "\1f4c2";
+}
+.jelly-icon-download:before {
+  content: "\f220";
 }
 .jelly-icon-compile:before {
   content: "\2699";

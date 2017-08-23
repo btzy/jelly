@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Using Jelly</title>
+        <link href="https://fonts.googleapis.com/css?family=Chewy|Signika" rel="stylesheet">
+        <link href="jelly-icon.css" rel="stylesheet">
+        <link rel="stylesheet" href="bf.css" />
+    </head>
+    <body>
+        <div class="wrapper">
+            <div id="header">
+                <div class="wrapper">
+                    <a class="title" href="bf.html"><span class="jelly">Jelly</span> Compiler for Brainfuck</a>
+                    <div class="extraspace"></div>
+                    <a id="helpbutton" class="headerbutton" title="Help (F1)" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-help"></i><div class="button-name">Help</div></a>
+                    <a id="infobutton" class="headerbutton" title="About Jelly" href="about.html" target="_blank"><i class="jelly-icon jelly-icon-about"></i><div class="button-name">About</div></a>
+                    <div class="spaceend"></div>
+                </div>
+            </div>
+            <div id="about">
+                <h1>Using Jelly</h1>
+                <p>Jelly allows execution of your brainfuck program in three different modes:</p>
+                <ul>
+                    <li>Interpreted (Debug) + Interactive</li>
+                    <li>Compiled (Release) + Interactive</li>
+                    <li>Compiled (Release) + Non-Interactive</li>
+                </ul>
+                <p>Compiled mode runs significantly faster than interpreted mode as Jelly converts your brainfuck program to WebAssembly, which is compiled to native code on your browser.  A moderate amount of optimizations are also performed before generating the WebAssembly code, resulting in one of the fastest web-based brainfuck execution speeds.</p>
+                <p>Interpreted mode allows for step-through debugging and memory inspection &nbsp; modification.  Jelly's advanced debugging features may be accessed by using this mode.</p>
+                <p>Interactive mode means that input and output are interleaved like the Unix terminal or Windows command prompt, and you may read output and send input to your brainfuck program while it is running.  On the other hand, non-interactive mode requires that all input is prepared before starting execution and will only make any output visible after your program has terminated.</p>
+                <p>Unless you have large quantities of input or output to process, it is unlikely that your program will run significantly slower in interactive mode, so interactive mode is the recommended option to use.</p>
+                <p>To run your brainfuck program, simply type (or paste) your code in the code editor and click the "Run" button on the top menu after selecting the correct mode.</p>
+                <h2>Debugging Features</h2>
+                <p>Code may be paused at any time while running, by pressing the "Pause/Continue" button.  Middle clicking on any brainfuck command character will toggle a breakpoint at that character (so that execution will pause just before that command).</p>
+                <p>While paused, the current memory array is displayed and is editable.  To edit a memory cell, right click or double click inside the cell and type a new value.  The cell will be updated once you click somewhere else.</p>
+            </div>
+        </div>
+        
+    </body>
+</html>
