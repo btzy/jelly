@@ -371,28 +371,32 @@ window.addEventListener("load",function(){
     
     
     continuebutton.addEventListener("click",function(){
-        if(execution_is_paused){
-            if(continuehandler&&globalPauseBuffer){
-                // turn off the global pauser
-                var arr=new Uint8Array(globalPauseBuffer);
-                Atomics.store(arr,0,0);
-                undraw_execution_paused();
-                continuehandler();
+        if(runTerminator){ // check if code is currently running
+            if(execution_is_paused){
+                if(continuehandler&&globalPauseBuffer){
+                    // turn off the global pauser
+                    var arr=new Uint8Array(globalPauseBuffer);
+                    Atomics.store(arr,0,0);
+                    undraw_execution_paused();
+                    continuehandler();
+                }
             }
-        }
-        else{
-            // turn on the global pauser
-            var arr=new Uint8Array(globalPauseBuffer);
-            Atomics.store(arr,0,1);
+            else{
+                // turn on the global pauser
+                var arr=new Uint8Array(globalPauseBuffer);
+                Atomics.store(arr,0,1);
+            }
         }
     });
     stepbutton.addEventListener("click",function(){
-        if(execution_is_paused){
-            if(continuehandler&&globalPauseBuffer){
-                // turn off the global pauser
-                var arr=new Uint8Array(globalPauseBuffer);
-                Atomics.store(arr,0,1);
-                continuehandler();
+        if(runTerminator){ // check if code is currently running
+            if(execution_is_paused){
+                if(continuehandler&&globalPauseBuffer){
+                    // turn off the global pauser
+                    var arr=new Uint8Array(globalPauseBuffer);
+                    Atomics.store(arr,0,1);
+                    continuehandler();
+                }
             }
         }
     });
@@ -505,6 +509,39 @@ window.addEventListener("load",function(){
             memoryviewmanager=undefined;
         }
     };
+    
+    
+    
+    // memoryview buttons/functions
+    var cast_int_range=function(str,minval,maxval){
+        var k=parseInt(str);
+        if(k.toString()!==str)return undefined;
+        if(k<minval||k>maxval)return undefined;
+        return k;
+    };
+    memoryview.getElementsByClassName("left-arrow")[0].addEventListener("click",function(){
+        if(memoryviewmanager)memoryviewmanager.goSmaller();
+    });
+    memoryview.getElementsByClassName("right-arrow")[0].addEventListener("click",function(){
+        if(memoryviewmanager)memoryviewmanager.goLarger();
+    });
+    Array.prototype.forEach.call(memoryview.getElementsByClassName("goto"),function(el){
+        var el_input=el.getElementsByTagName("input")[0];
+        el_input.addEventListener("keyup",function(e){
+            if(memoryviewmanager&&e.key==="Enter"){
+                var str=el_input.value;
+                var target=cast_int_range(str,memoryviewmanager.minIndex,memoryviewmanager.maxIndex);
+                if(target!==undefined){
+                    memoryviewmanager.goToIndex(target);
+                }
+                else{
+                    alert("Cannot interpret \""+str+"\" as cell index!");
+                }
+                el_input.value="";
+            }
+        });
+    });
+    
     
     
     // options

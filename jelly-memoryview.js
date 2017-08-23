@@ -19,6 +19,7 @@ MemoryView.prototype.refresh=function(){
     for(var i=0;i<this.viewLength;++i){
         labels[i].firstChild.nodeValue=(this.currentIndex+i).toString();
         cells[i].firstChild.nodeValue=Atomics.load(this.data,this.currentIndex+i).toString();
+        cells[i].dataset.index=(this.currentIndex+i).toString();
         if(this.currentIndex+i===this.ptr){
             cells[i].classList.add("memory-ptr");
             labels[i].classList.add("memory-ptr");
@@ -43,10 +44,56 @@ MemoryView.prototype.redraw=function(){
     cellwrapper.classList.add("cellwrapper");
     var labelwrapper=document.createElement("div");
     labelwrapper.classList.add("labelwrapper");
+    var that=this;
     for(var i=0;i<this.viewLength;++i){
         var tdiv=document.createElement("div");
         tdiv.classList.add("cell");
         tdiv.appendChild(document.createTextNode(""));
+        var edit_handler=function(e){
+            var this_cell_el=e.currentTarget;
+            if(this_cell_el.dataset.isEditing){
+                return;
+            }
+            this_cell_el.dataset.isEditing="true";
+            var inp=document.createElement("input");
+            inp.type="text";
+            var val2=this_cell_el.firstChild.nodeValue;
+            inp.value=val2;
+            while(this_cell_el.firstChild)this_cell_el.removeChild(this_cell_el.firstChild);
+            this_cell_el.appendChild(inp);
+            var process_done_editing=function(){
+                inp.removeEventListener("blur",process_done_editing);
+                inp.removeEventListener("keyup",_proc);
+                var str=inp.value;
+                var k=parseInt(str);
+                if(k.toString()===str&&k>=0&&k<=255){
+                    Atomics.store(that.data,parseInt(this_cell_el.dataset.index),k);
+                }
+                else{
+                    alert("\""+str+"\" is not a valid value!");
+                    str=val2;
+                }
+                while(this_cell_el.firstChild)this_cell_el.removeChild(this_cell_el.firstChild);
+                this_cell_el.appendChild(document.createTextNode(str));
+                delete this_cell_el.dataset.isEditing;
+            };
+            inp.addEventListener("blur",process_done_editing);
+            var _proc=function(e){
+                if(e.key==="Enter")process_done_editing();
+            };
+            inp.addEventListener("keyup",_proc);
+            inp.select();
+        };
+        tdiv.addEventListener("dblclick",edit_handler);
+        tdiv.addEventListener("mousedown",function(e){
+            if(e.button===2){
+                e.preventDefault();
+                edit_handler(e);
+            }
+        });
+        tdiv.addEventListener("contextmenu",function(e){
+            e.preventDefault();return false;
+        });
         cellwrapper.appendChild(tdiv);
         var tdiv=document.createElement("div");
         tdiv.classList.add("label");
@@ -82,14 +129,14 @@ MemoryView.prototype.goToIndex=function(index){
 };
 
 MemoryView.prototype.goSmaller=function(){
-    if(this.currenIndex<=this.minIndex)return false;
+    if(this.currentIndex<=this.minIndex)return false;
     --this.currentIndex;
     this.refresh();
     return true;
 }
 
 MemoryView.prototype.goLarger=function(){
-    if(this.currenIndex+this.viewLength>this.maxIndex)return false;
+    if(this.currentIndex+this.viewLength>this.maxIndex)return false;
     ++this.currentIndex;
     this.refresh();
     return true;
