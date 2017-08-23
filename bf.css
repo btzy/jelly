@@ -704,6 +704,7 @@ body>.wrapper>.horizontal-spacer .actual-spacer{
     -moz-user-select: initial;
     -ms-user-select: initial;
     user-select: initial;
+    overflow:auto;
 }
 
 #about p{
@@ -713,10 +714,12 @@ body>.wrapper>.horizontal-spacer .actual-spacer{
 
 #about h1{
     font-size:24px;
+    padding:0 20px;
 }
 
 #about h2{
     font-size:20px;
+    padding:0 20px;
 }
 
 
