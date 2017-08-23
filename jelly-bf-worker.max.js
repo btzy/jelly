@@ -1570,7 +1570,10 @@ JellyBFInterpreter = function(codeString, get_input, put_output, breakpointuint8
     }
     if (loop_stack.length !== 0) throw JellyBFInterpreter.CompileError.LOOPS_IMBALANCED;
     this.next_instruction_index[last_instruction_index] = Number.MAX_SAFE_INTEGER;
-    this.instruction_ptr = this.entry_point;
+    var pseudo_entry_index = this.code.length;
+    this.code += "`";
+    this.next_instruction_index[pseudo_entry_index] = this.entry_point;
+    this.instruction_ptr = pseudo_entry_index;
 };
 
 JellyBFInterpreter.CompileError = {
@@ -1612,7 +1615,7 @@ JellyBFInterpreter.prototype.run = function() {
             Atomics.store(this.memory, this.memory_ptr, this.get_input());
         } else if (this.code[this.instruction_ptr] === ".") {
             this.put_output(Atomics.load(this.memory, this.memory_ptr));
-        } else {
+        } else if (this.code[this.instruction_ptr] === "`") {} else {
             throw "Internal error!";
         }
         this.instruction_ptr = this.next_instruction_index[this.instruction_ptr];

@@ -9,6 +9,9 @@ red (30%): rgb(153,0,0)
 grey (25%): rgb(64,64,64)
 
 yellow (90%): rgb(255,255,204)
+
+green (75%): rgb(128,255,128)
+green (50%): rgb(0,255,0);
 */
 
 html, body{
@@ -323,6 +326,7 @@ body>.wrapper>*{
     -moz-user-select: initial;
     -ms-user-select: initial;
     user-select: initial;
+    overflow:hidden;
 }
 
 #memoryview .memory-cells .cellwrapper{
@@ -337,12 +341,41 @@ body>.wrapper>*{
 }
 
 #memoryview .memory-cells .cellwrapper .cell{
-    flex:1 1 0px;
+    flex:1 1 2px;
     border:1px solid black;
+    overflow:hidden;
 }
 
 #memoryview .memory-cells .cellwrapper .cell:not(:first-child){
     margin-left:-1px;
+}
+
+#memoryview .memory-cells .cellwrapper .cell.memory-ptr{
+    border-color:red;
+    border-width:2px;
+    line-height:26px;
+    flex:1 1 0px;
+}
+
+#memoryview .memory-cells .cellwrapper .cell.memory-ptr + .cell{
+    border-left-color:red;
+}
+
+#memoryview .memory-cells .cellwrapper .cell input{
+    width:100%;
+    height:100%;
+    font-family:inherit;
+    font-size:inherit;
+    text-align:center;
+    box-sizing:border-box;
+    outline:none;
+    border:none;
+    background-color:rgb(128,255,128);
+}
+
+#memoryview .memory-cells .cellwrapper .cell input::selection{
+    background-color:rgb(0,128,0);
+    color:white;
 }
 
 #memoryview .memory-cells .labelwrapper{
@@ -359,10 +392,16 @@ body>.wrapper>*{
 #memoryview .memory-cells .labelwrapper .label{
     flex:1 1 0px;
     border:1px solid transparent;
+    overflow:hidden;
 }
 
 #memoryview .memory-cells .labelwrapper .label:not(:first-child){
     margin-left:-1px;
+}
+
+#memoryview .memory-cells .labelwrapper .label.memory-ptr{
+    font-weight:bold;
+    color:red;
 }
 
 
