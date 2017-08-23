@@ -19,6 +19,14 @@ MemoryView.prototype.refresh=function(){
     for(var i=0;i<this.viewLength;++i){
         labels[i].firstChild.nodeValue=(this.currentIndex+i).toString();
         cells[i].firstChild.nodeValue=Atomics.load(this.data,this.currentIndex+i).toString();
+        if(this.currentIndex+i===this.ptr){
+            cells[i].classList.add("memory-ptr");
+            labels[i].classList.add("memory-ptr");
+        }
+        else{
+            cells[i].classList.remove("memory-ptr");
+            labels[i].classList.remove("memory-ptr");
+        }
     }
 };
 

@@ -337,12 +337,23 @@ body>.wrapper>*{
 }
 
 #memoryview .memory-cells .cellwrapper .cell{
-    flex:1 1 0px;
+    flex:1 1 2px;
     border:1px solid black;
 }
 
 #memoryview .memory-cells .cellwrapper .cell:not(:first-child){
     margin-left:-1px;
+}
+
+#memoryview .memory-cells .cellwrapper .cell.memory-ptr{
+    border-color:red;
+    border-width:2px;
+    line-height:26px;
+    flex:1 1 0px;
+}
+
+#memoryview .memory-cells .cellwrapper .cell.memory-ptr + .cell{
+    border-left-color:red;
 }
 
 #memoryview .memory-cells .labelwrapper{
@@ -363,6 +374,11 @@ body>.wrapper>*{
 
 #memoryview .memory-cells .labelwrapper .label:not(:first-child){
     margin-left:-1px;
+}
+
+#memoryview .memory-cells .labelwrapper .label.memory-ptr{
+    font-weight:bold;
+    color:red;
 }
 
 
