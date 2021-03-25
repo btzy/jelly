@@ -100,7 +100,7 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
             output_read_head=output_write_head;
         }
         Atomics.store(outputwaitint32array,WaitArrayId.READ_HEAD,output_read_head);
-        Atomics.wake(outputwaitint32array,WaitArrayId.READ_HEAD,1);
+        Atomics.notify(outputwaitint32array,WaitArrayId.READ_HEAD,1);
         var newText=new TextDecoder().decode(newData);
         outputCallback(newText);
     };
@@ -129,7 +129,7 @@ JellyBFProcessHandler.prototype.executeInteractive=function(options,inputRequest
             pendingInputData.shift();
         }
         Atomics.store(inputwaitint32array,WaitArrayId.WRITE_HEAD,input_write_head);
-        console.log(Atomics.wake(inputwaitint32array,WaitArrayId.WRITE_HEAD,1));
+        console.log(Atomics.notify(inputwaitint32array,WaitArrayId.WRITE_HEAD,1));
         
         if(pendingInputData.length>0){
             inputTimeout=setTimeout(do_input,40);
